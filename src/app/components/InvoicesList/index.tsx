@@ -5,12 +5,14 @@ import { useTable, usePagination, Column, CellProps } from 'react-table'
 import { Pagination, Form, InputGroup } from 'react-bootstrap'
 import PaginationItems from './PaginationItems'
 import PaginationControls from './PaginationControls'
+import InvoiceListSkeleton from './InvoiceListSkeleton'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(false)
   const [pageCount, setPageCount] = useState(0)
+  const [totalEntries, setTotalEntries] = useState(0)
 
   const columns: Array<Column<Invoice>> = useMemo(
     () => [
@@ -34,14 +36,14 @@ const InvoicesList = (): React.ReactElement => {
         Header: 'Total',
         accessor: 'total',
         Cell: ({ value }: CellProps<Invoice, string | null>) => (
-          <>{value || ''}</>
+          <>{value || '-'}</>
         ),
       },
       {
         Header: 'Tax',
         accessor: 'tax',
         Cell: ({ value }: CellProps<Invoice, string | null>) => (
-          <>{value || ''}</>
+          <>{value || '-'}</>
         ),
       },
       {
@@ -106,6 +108,7 @@ const InvoicesList = (): React.ReactElement => {
 
       setInvoices(data.invoices)
       setPageCount(data.pagination.total_pages)
+      setTotalEntries(data.pagination.total_entries)
       setLoading(false)
     }
     fetchInvoices()
@@ -127,11 +130,26 @@ const InvoicesList = (): React.ReactElement => {
     gotoPage(pageCount - 1)
   }
 
+  const pageSizeOptions = useMemo(() => {
+    const defaultSizes = [10, 20, 30, 40, 50]
+
+    if (totalEntries === 0) {
+      return defaultSizes
+    }
+
+    const options = defaultSizes.filter((size) => size < totalEntries)
+    options.push(totalEntries)
+
+    return options
+      .sort((a, b) => a - b)
+      .filter((value, index, self) => index === 0 || value !== self[index - 1])
+  }, [totalEntries])
+
   return (
     <>
       <table
         {...getTableProps()}
-        className="table table-bordered table-striped"
+        className={`table ${loading ? '' : 'table-bordered table-striped'}`}
       >
         <thead>
           {headerGroups.map((headerGroup) => (
@@ -143,10 +161,8 @@ const InvoicesList = (): React.ReactElement => {
           ))}
         </thead>
         <tbody {...getTableBodyProps()}>
-          {!loading ? (
-            <tr>
-              <td colSpan={columns.length}>Loading...</td>
-            </tr>
+          {loading ? (
+            <InvoiceListSkeleton rows={pageSize} columns={columns.length} />
           ) : (
             page.map((row) => {
               prepareRow(row)
@@ -171,7 +187,7 @@ const InvoicesList = (): React.ReactElement => {
             style={{ width: '120px' }}
             className="me-2"
           >
-            {[10, 20, 30, 40, 50].map((pageSize) => (
+            {pageSizeOptions.map((pageSize) => (
               <option key={pageSize} value={pageSize}>
                 Show {pageSize}
               </option>
