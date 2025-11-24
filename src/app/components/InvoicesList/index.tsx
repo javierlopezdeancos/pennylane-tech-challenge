@@ -1,57 +1,212 @@
 import { useApi } from 'api'
 import { Invoice } from 'types'
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useTable, usePagination, Column, CellProps } from 'react-table'
+import { Pagination, Form, InputGroup } from 'react-bootstrap'
+import PaginationItems from './PaginationItems'
+import PaginationControls from './PaginationControls'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [loading, setLoading] = useState(false)
+  const [pageCount, setPageCount] = useState(0)
 
-  const [invoicesList, setInvoicesList] = useState<Invoice[]>([])
+  const columns: Array<Column<Invoice>> = useMemo(
+    () => [
+      {
+        Header: 'Id',
+        accessor: 'id',
+      },
+      {
+        Header: 'Customer',
+        accessor: (d) =>
+          d.customer ? `${d.customer.first_name} ${d.customer.last_name}` : '',
+      },
+      {
+        Header: 'Address',
+        accessor: (d) =>
+          d.customer
+            ? `${d.customer.address}, ${d.customer.zip_code} ${d.customer.city}`
+            : '',
+      },
+      {
+        Header: 'Total',
+        accessor: 'total',
+        Cell: ({ value }: CellProps<Invoice, string | null>) => (
+          <>{value || ''}</>
+        ),
+      },
+      {
+        Header: 'Tax',
+        accessor: 'tax',
+        Cell: ({ value }: CellProps<Invoice, string | null>) => (
+          <>{value || ''}</>
+        ),
+      },
+      {
+        Header: 'Finalized',
+        accessor: (d) => (d.finalized ? 'Yes' : 'No'),
+      },
+      {
+        Header: 'Paid',
+        accessor: (d) => (d.paid ? 'Yes' : 'No'),
+      },
+      {
+        Header: 'Date',
+        accessor: 'date',
+        Cell: ({ value }: CellProps<Invoice, string | null>) => (
+          <>{value || ''}</>
+        ),
+      },
+      {
+        Header: 'Deadline',
+        accessor: 'deadline',
+        Cell: ({ value }: CellProps<Invoice, string | null>) => (
+          <>{value || ''}</>
+        ),
+      },
+    ],
+    []
+  )
 
-  const fetchInvoices = useCallback(async () => {
-    const { data } = await api.getInvoices()
-    setInvoicesList(data.invoices)
-  }, [api])
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    prepareRow,
+    page,
+    canPreviousPage,
+    canNextPage,
+    gotoPage,
+    nextPage,
+    previousPage,
+    setPageSize,
+    state: { pageIndex, pageSize },
+  } = useTable<Invoice>(
+    {
+      columns,
+      data: invoices,
+      initialState: { pageIndex: 0, pageSize: 10 },
+      manualPagination: true,
+      pageCount: pageCount,
+      autoResetPage: false,
+    },
+    usePagination
+  )
 
   useEffect(() => {
+    const fetchInvoices = async () => {
+      setLoading(true)
+
+      const { data } = await api.getInvoices({
+        page: pageIndex + 1,
+        per_page: pageSize,
+      })
+
+      setInvoices(data.invoices)
+      setPageCount(data.pagination.total_pages)
+      setLoading(false)
+    }
     fetchInvoices()
-  }, [fetchInvoices])
+  }, [api, pageIndex, pageSize])
+
+  const handleGoToFirstPage = () => {
+    gotoPage(0)
+  }
+
+  const handleGoToPreviousPage = () => {
+    previousPage()
+  }
+
+  const handleGoToNextPage = () => {
+    nextPage()
+  }
+
+  const handleGoToLastPage = () => {
+    gotoPage(pageCount - 1)
+  }
 
   return (
-    <table className="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>Customer</th>
-          <th>Address</th>
-          <th>Total</th>
-          <th>Tax</th>
-          <th>Finalized</th>
-          <th>Paid</th>
-          <th>Date</th>
-          <th>Deadline</th>
-        </tr>
-      </thead>
-      <tbody>
-        {invoicesList.map((invoice) => (
-          <tr key={invoice.id}>
-            <td>{invoice.id}</td>
-            <td>
-              {invoice.customer?.first_name} {invoice.customer?.last_name}
-            </td>
-            <td>
-              {invoice.customer?.address}, {invoice.customer?.zip_code}{' '}
-              {invoice.customer?.city}
-            </td>
-            <td>{invoice.total}</td>
-            <td>{invoice.tax}</td>
-            <td>{invoice.finalized ? 'Yes' : 'No'}</td>
-            <td>{invoice.paid ? 'Yes' : 'No'}</td>
-            <td>{invoice.date}</td>
-            <td>{invoice.deadline}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <>
+      <table
+        {...getTableProps()}
+        className="table table-bordered table-striped"
+      >
+        <thead>
+          {headerGroups.map((headerGroup) => (
+            <tr {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map((column) => (
+                <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {!loading ? (
+            <tr>
+              <td colSpan={columns.length}>Loading...</td>
+            </tr>
+          ) : (
+            page.map((row) => {
+              prepareRow(row)
+              return (
+                <tr {...row.getRowProps()}>
+                  {row.cells.map((cell) => (
+                    <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                  ))}
+                </tr>
+              )
+            })
+          )}
+        </tbody>
+      </table>
+      <div className="d-flex justify-content-between align-items-center">
+        <div className="d-flex align-items-center">
+          <Form.Select
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value))
+            }}
+            style={{ width: '120px' }}
+            className="me-2"
+          >
+            {[10, 20, 30, 40, 50].map((pageSize) => (
+              <option key={pageSize} value={pageSize}>
+                Show {pageSize}
+              </option>
+            ))}
+          </Form.Select>
+          <InputGroup style={{ width: '200px' }}>
+            <InputGroup.Text>Go to page:</InputGroup.Text>
+            <Form.Control
+              type="number"
+              defaultValue={pageIndex + 1}
+              onChange={(e) => {
+                const page = e.target.value ? Number(e.target.value) - 1 : 0
+                gotoPage(page)
+              }}
+            />
+          </InputGroup>
+        </div>
+        <Pagination>
+          <PaginationControls
+            onGoToFirstPage={handleGoToFirstPage}
+            onGoToPreviousPage={handleGoToPreviousPage}
+            onGoToNextPage={handleGoToNextPage}
+            onGoToLastPage={handleGoToLastPage}
+            canPreviousPage={canPreviousPage}
+            canNextPage={canNextPage}
+          >
+            <PaginationItems
+              pageIndex={pageIndex}
+              pageCount={pageCount}
+              gotoPage={gotoPage}
+            />
+          </PaginationControls>
+        </Pagination>
+      </div>
+    </>
   )
 }
 
