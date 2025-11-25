@@ -9,12 +9,18 @@ import {
   Column,
   CellProps,
 } from 'react-table'
-import { Table, Pagination, Form, InputGroup } from 'react-bootstrap'
+import { Table, Pagination, Form, InputGroup, Stack } from 'react-bootstrap'
 import PaginationItems from './PaginationItems'
 import PaginationControls from './PaginationControls'
 import InvoiceListSkeleton from './InvoiceListSkeleton'
 import FilterByStatus from './FilterByStatus'
 import SortableHeader from './SortableHeader'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faFileLines,
+  faTrashCan,
+  faCircleCheck,
+} from '@fortawesome/free-regular-svg-icons'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
@@ -90,6 +96,32 @@ const InvoicesList = (): React.ReactElement => {
         disableSortBy: false,
         Cell: ({ value }: CellProps<Invoice, string | null>) => (
           <>{value || ''}</>
+        ),
+      },
+      {
+        Header: 'Actions',
+        disableSortBy: false,
+        Cell: () => (
+          <Stack direction="horizontal" gap={3}>
+            <FontAwesomeIcon
+              icon={faFileLines}
+              size="lg"
+              color="#0c6efd"
+              style={{ cursor: 'pointer' }}
+            />
+            <FontAwesomeIcon
+              icon={faCircleCheck}
+              size="lg"
+              color="#0c6efd"
+              style={{ cursor: 'pointer' }}
+            />
+            <FontAwesomeIcon
+              icon={faTrashCan}
+              size="lg"
+              color="#0c6efd"
+              style={{ cursor: 'pointer' }}
+            />
+          </Stack>
         ),
       },
     ],
