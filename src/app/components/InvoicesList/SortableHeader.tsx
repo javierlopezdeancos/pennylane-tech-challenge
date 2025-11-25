@@ -15,28 +15,16 @@ function SortableHeader({ column }: { column: any }): ReactElement | null {
     if ((column as any).isSorted) {
       if ((column as any).isSortedDesc) {
         return (
-          <FontAwesomeIcon
-            icon={faCaretUp}
-            size="sm"
-            color="#0c6efd"
-            style={{ paddingTop: '4px' }}
-          />
+          <FontAwesomeIcon icon={faCaretUp} style={{ paddingTop: '4px' }} />
         )
       } else {
         return (
-          <FontAwesomeIcon
-            icon={faCaretDown}
-            size="sm"
-            color="#0c6efd"
-            style={{ paddingTop: '2px' }}
-          />
+          <FontAwesomeIcon icon={faCaretDown} style={{ paddingTop: '2px' }} />
         )
       }
     }
 
-    return (
-      <FontAwesomeIcon icon={faSort} size="xs" style={{ paddingTop: '2px' }} />
-    )
+    return <FontAwesomeIcon icon={faSort} style={{ paddingTop: '2px' }} />
   }
 
   return (

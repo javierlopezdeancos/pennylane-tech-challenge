@@ -107,19 +107,16 @@ const InvoicesList = (): React.ReactElement => {
             <FontAwesomeIcon
               icon={faFileLines}
               size="lg"
-              color="#0c6efd"
               style={{ cursor: 'pointer' }}
             />
             <FontAwesomeIcon
               icon={faCircleCheck}
               size="lg"
-              color="#0c6efd"
               style={{ cursor: 'pointer' }}
             />
             <FontAwesomeIcon
               icon={faTrashCan}
               size="lg"
-              color="#0c6efd"
               style={{ cursor: 'pointer' }}
             />
           </Stack>

@@ -22,18 +22,10 @@ function FilterByStatus({ column }: { column: any }) {
         <FontAwesomeIcon icon={faFilter} onClick={handleFilterBy} size="xs" />
       ) : null}
       {filterValue === 'No' ? (
-        <FontAwesomeIcon
-          icon={faXmark}
-          onClick={handleFilterByUnfinished}
-          color="#0c6efd"
-        />
+        <FontAwesomeIcon icon={faXmark} onClick={handleFilterByUnfinished} />
       ) : null}
       {filterValue === 'Yes' ? (
-        <FontAwesomeIcon
-          icon={faCheck}
-          onClick={handleFilterByFinished}
-          color="#0c6efd"
-        />
+        <FontAwesomeIcon icon={faCheck} onClick={handleFilterByFinished} />
       ) : null}
     </>
   )
