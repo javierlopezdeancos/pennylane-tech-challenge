@@ -1,11 +1,25 @@
 import { useApi } from 'api'
 import { Invoice } from 'types'
 import { useEffect, useMemo, useState } from 'react'
-import { useTable, usePagination, Column, CellProps } from 'react-table'
-import { Pagination, Form, InputGroup } from 'react-bootstrap'
+import {
+  useTable,
+  usePagination,
+  useFilters,
+  useSortBy,
+  Column,
+  CellProps,
+} from 'react-table'
+import { Pagination, Form, InputGroup, Stack } from 'react-bootstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faCaretUp,
+  faCaretDown,
+  faSort,
+} from '@fortawesome/free-solid-svg-icons'
 import PaginationItems from './PaginationItems'
 import PaginationControls from './PaginationControls'
 import InvoiceListSkeleton from './InvoiceListSkeleton'
+import FilterByStatus from './FilterByStatus'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
@@ -18,15 +32,18 @@ const InvoicesList = (): React.ReactElement => {
     () => [
       {
         Header: 'Id',
+        disableSortBy: true,
         accessor: 'id',
       },
       {
         Header: 'Customer',
+        disableSortBy: true,
         accessor: (d) =>
           d.customer ? `${d.customer.first_name} ${d.customer.last_name}` : '',
       },
       {
         Header: 'Address',
+        disableSortBy: true,
         accessor: (d) =>
           d.customer
             ? `${d.customer.address}, ${d.customer.zip_code} ${d.customer.city}`
@@ -35,6 +52,7 @@ const InvoicesList = (): React.ReactElement => {
       {
         Header: 'Total',
         accessor: 'total',
+        disableSortBy: false,
         Cell: ({ value }: CellProps<Invoice, string | null>) => (
           <>{value || '-'}</>
         ),
@@ -42,21 +60,29 @@ const InvoicesList = (): React.ReactElement => {
       {
         Header: 'Tax',
         accessor: 'tax',
+        disableSortBy: false,
         Cell: ({ value }: CellProps<Invoice, string | null>) => (
           <>{value || '-'}</>
         ),
       },
       {
-        Header: 'Finalized',
+        id: 'Finalized',
         accessor: (d) => (d.finalized ? 'Yes' : 'No'),
+        disableSortBy: true,
+        Filter: FilterByStatus,
+        filter: 'equals',
       },
       {
-        Header: 'Paid',
+        id: 'Paid',
         accessor: (d) => (d.paid ? 'Yes' : 'No'),
+        disableSortBy: true,
+        Filter: FilterByStatus,
+        filter: 'equals',
       },
       {
         Header: 'Date',
         accessor: 'date',
+        disableSortBy: false,
         Cell: ({ value }: CellProps<Invoice, string | null>) => (
           <>{value || ''}</>
         ),
@@ -64,6 +90,7 @@ const InvoicesList = (): React.ReactElement => {
       {
         Header: 'Deadline',
         accessor: 'deadline',
+        disableSortBy: false,
         Cell: ({ value }: CellProps<Invoice, string | null>) => (
           <>{value || ''}</>
         ),
@@ -94,6 +121,8 @@ const InvoicesList = (): React.ReactElement => {
       pageCount: pageCount,
       autoResetPage: false,
     },
+    useFilters,
+    useSortBy,
     usePagination
   )
 
@@ -154,9 +183,52 @@ const InvoicesList = (): React.ReactElement => {
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps()}>{column.render('Header')}</th>
-              ))}
+              {headerGroup.headers.map((column) => {
+                const sortProps = (column as any).getSortByToggleProps
+                  ? (column as any).getSortByToggleProps()
+                  : {}
+
+                return (
+                  <th
+                    {...column.getHeaderProps(sortProps)}
+                    style={{
+                      cursor: (column as any).canSort ? 'pointer' : 'default',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'start',
+                        alignItems: 'start',
+                        cursor: (column as any).canSort ? 'pointer' : 'default',
+                      }}
+                    >
+                      <Stack direction="horizontal" gap={2}>
+                        {(column as any).canSort ? (
+                          (column as any).isSorted ? (
+                            (column as any).isSortedDesc ? (
+                              <FontAwesomeIcon icon={faCaretUp} size="xs" />
+                            ) : (
+                              <FontAwesomeIcon icon={faCaretDown} size="xs" />
+                            )
+                          ) : (
+                            <FontAwesomeIcon icon={faSort} size="xs" />
+                          )
+                        ) : null}
+                        {column.render('Header')}
+                      </Stack>
+                    </div>
+                    <div>
+                      {(column as any).canFilter
+                        ? (column as any).Filter
+                          ? (column as any).Filter({ column })
+                          : null
+                        : null}
+                    </div>
+                  </th>
+                )
+              })}
             </tr>
           ))}
         </thead>
