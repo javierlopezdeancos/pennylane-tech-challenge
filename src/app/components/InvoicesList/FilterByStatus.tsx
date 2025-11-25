@@ -1,9 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faCircleCheck,
-  faFilter,
-  faCircleXmark,
-} from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faFilter, faXmark } from '@fortawesome/free-solid-svg-icons'
 
 function FilterByStatus({ column }: { column: any }) {
   const { filterValue, setFilter } = column
@@ -27,14 +23,16 @@ function FilterByStatus({ column }: { column: any }) {
       ) : null}
       {filterValue === 'No' ? (
         <FontAwesomeIcon
-          icon={faCircleXmark}
+          icon={faXmark}
           onClick={handleFilterByUnfinished}
+          color="#0c6efd"
         />
       ) : null}
       {filterValue === 'Yes' ? (
         <FontAwesomeIcon
-          icon={faCircleCheck}
+          icon={faCheck}
           onClick={handleFilterByFinished}
+          color="#0c6efd"
         />
       ) : null}
     </>
