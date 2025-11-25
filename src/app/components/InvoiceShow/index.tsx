@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router'
-import { Container, Row, Col, Card, Table, Badge } from 'react-bootstrap'
+import { useParams, useNavigate } from 'react-router-dom'
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Table,
+  Badge,
+  Button,
+  Modal,
+  Spinner,
+} from 'react-bootstrap'
 import GoBack from '../GoBack'
 import { useApi } from 'api'
 import { Invoice } from 'types'
@@ -12,6 +22,11 @@ const InvoiceShow = () => {
 
   const [invoice, setInvoice] = useState<Invoice>()
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+
+  const [showFinalizeModal, setShowFinalizeModal] = useState(false)
+  const [showRemoveModal, setShowRemoveModal] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
 
   useEffect(() => {
     if (invoice) {
@@ -52,6 +67,55 @@ const InvoiceShow = () => {
     (sum: number, line: any) => sum + (parseFloat(line.tax) || 0),
     0
   )
+
+  const openFinalize = () => setShowFinalizeModal(true)
+  const closeFinalize = () => setShowFinalizeModal(false)
+
+  const openRemove = () => setShowRemoveModal(true)
+  const closeRemove = () => setShowRemoveModal(false)
+
+  const confirmFinalize = async () => {
+    if (!invoice) {
+      return
+    }
+
+    setActionLoading(true)
+
+    try {
+      const { data } = await api.putInvoice(
+        { id: invoice.id },
+        { invoice: { id: invoice.id, finalized: true } }
+      )
+      setInvoice(data)
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(err)
+    } finally {
+      setActionLoading(false)
+      setShowFinalizeModal(false)
+    }
+  }
+
+  const confirmRemove = async () => {
+    if (!invoice) {
+      return
+    }
+
+    setActionLoading(true)
+
+    try {
+      await api.deleteInvoice({ id: invoice.id })
+
+      setActionLoading(false)
+      setShowRemoveModal(false)
+
+      navigate(-1)
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(err)
+      setActionLoading(false)
+    }
+  }
 
   return (
     <Container className="mt-4">
@@ -224,6 +288,89 @@ const InvoiceShow = () => {
           </Card>
         </Col>
       </Row>
+      <div
+        style={{ position: 'sticky', bottom: 0, zIndex: 20 }}
+        className="bg-white border-top py-2"
+      >
+        <div className="container d-flex justify-content-end">
+          <div className="d-flex gap-2">
+            <Button
+              variant="danger"
+              onClick={openRemove}
+              disabled={actionLoading}
+            >
+              {actionLoading && showRemoveModal ? (
+                <Spinner animation="border" size="sm" className="me-2" />
+              ) : null}
+              REMOVE
+            </Button>
+            <Button
+              variant="primary"
+              onClick={openFinalize}
+              disabled={invoice.finalized || actionLoading}
+            >
+              {actionLoading && showFinalizeModal ? (
+                <Spinner animation="border" size="sm" className="me-2" />
+              ) : null}
+              FINALIZE
+            </Button>
+          </div>
+        </div>
+      </div>
+      <Modal show={showFinalizeModal} onHide={closeFinalize} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Finalize</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to mark invoice #{invoice.id} as finalized?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={closeFinalize}
+            disabled={actionLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={confirmFinalize}
+            disabled={actionLoading}
+          >
+            {actionLoading ? (
+              <Spinner size="sm" animation="border" className="me-2" />
+            ) : null}
+            Confirm
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={showRemoveModal} onHide={closeRemove} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Remove</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          This will permanently delete invoice #{invoice.id}. Are you sure?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={closeRemove}
+            disabled={actionLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={confirmRemove}
+            disabled={actionLoading}
+          >
+            {actionLoading ? (
+              <Spinner size="sm" animation="border" className="me-2" />
+            ) : null}
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   )
 }
