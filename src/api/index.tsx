@@ -34,6 +34,7 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
       },
     })
   )
+
   const clientRef = useRef(apiRef.current.initSync<Client>())
 
   return (

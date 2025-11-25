@@ -24,6 +24,7 @@ import {
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
+
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(false)
   const [pageCount, setPageCount] = useState(0)
