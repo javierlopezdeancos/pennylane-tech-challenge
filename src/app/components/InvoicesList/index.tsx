@@ -9,17 +9,12 @@ import {
   Column,
   CellProps,
 } from 'react-table'
-import { Pagination, Form, InputGroup, Stack } from 'react-bootstrap'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faCaretUp,
-  faCaretDown,
-  faSort,
-} from '@fortawesome/free-solid-svg-icons'
+import { Table, Pagination, Form, InputGroup } from 'react-bootstrap'
 import PaginationItems from './PaginationItems'
 import PaginationControls from './PaginationControls'
 import InvoiceListSkeleton from './InvoiceListSkeleton'
 import FilterByStatus from './FilterByStatus'
+import SortableHeader from './SortableHeader'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
@@ -34,6 +29,7 @@ const InvoicesList = (): React.ReactElement => {
         Header: 'Id',
         disableSortBy: true,
         accessor: 'id',
+        enableResizing: false,
       },
       {
         Header: 'Customer',
@@ -66,14 +62,15 @@ const InvoicesList = (): React.ReactElement => {
         ),
       },
       {
-        id: 'Finalized',
+        Header: 'Finalized',
         accessor: (d) => (d.finalized ? 'Yes' : 'No'),
         disableSortBy: true,
+        enableResizing: false,
         Filter: FilterByStatus,
         filter: 'equals',
       },
       {
-        id: 'Paid',
+        Header: 'Paid',
         accessor: (d) => (d.paid ? 'Yes' : 'No'),
         disableSortBy: true,
         Filter: FilterByStatus,
@@ -176,7 +173,7 @@ const InvoicesList = (): React.ReactElement => {
 
   return (
     <>
-      <table
+      <Table
         {...getTableProps()}
         className={`table ${loading ? '' : 'table-bordered table-striped'}`}
       >
@@ -193,38 +190,42 @@ const InvoicesList = (): React.ReactElement => {
                     {...column.getHeaderProps(sortProps)}
                     style={{
                       cursor: (column as any).canSort ? 'pointer' : 'default',
+                      verticalAlign: 'middle',
+                      padding: '8px',
                     }}
                   >
                     <div
                       style={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'start',
-                        alignItems: 'start',
-                        cursor: (column as any).canSort ? 'pointer' : 'default',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '8px',
                       }}
                     >
-                      <Stack direction="horizontal" gap={2}>
-                        {(column as any).canSort ? (
-                          (column as any).isSorted ? (
-                            (column as any).isSortedDesc ? (
-                              <FontAwesomeIcon icon={faCaretUp} size="xs" />
-                            ) : (
-                              <FontAwesomeIcon icon={faCaretDown} size="xs" />
-                            )
-                          ) : (
-                            <FontAwesomeIcon icon={faSort} size="xs" />
-                          )
-                        ) : null}
-                        {column.render('Header')}
-                      </Stack>
-                    </div>
-                    <div>
-                      {(column as any).canFilter
-                        ? (column as any).Filter
-                          ? (column as any).Filter({ column })
-                          : null
-                        : null}
+                      <div
+                        style={{
+                          flex: 1,
+                          cursor: (column as any).canSort
+                            ? 'pointer'
+                            : 'default',
+                        }}
+                      >
+                        <SortableHeader column={column} />
+                      </div>
+                      <div
+                        style={{
+                          cursor: (column as any).canFilter
+                            ? 'pointer'
+                            : 'default',
+                        }}
+                      >
+                        {(column as any).canFilter
+                          ? (column as any).Filter
+                            ? (column as any).Filter({ column })
+                            : null
+                          : null}
+                      </div>
                     </div>
                   </th>
                 )
@@ -248,7 +249,7 @@ const InvoicesList = (): React.ReactElement => {
             })
           )}
         </tbody>
-      </table>
+      </Table>
       <div className="d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center">
           <Form.Select
