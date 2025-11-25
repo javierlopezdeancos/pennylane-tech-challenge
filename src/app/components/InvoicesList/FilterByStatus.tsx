@@ -4,7 +4,6 @@ import {
   faFilter,
   faCircleXmark,
 } from '@fortawesome/free-solid-svg-icons'
-import { Stack } from 'react-bootstrap'
 
 function FilterByStatus({ column }: { column: any }) {
   const { filterValue, setFilter } = column
@@ -22,7 +21,7 @@ function FilterByStatus({ column }: { column: any }) {
   }
 
   return (
-    <Stack direction="horizontal" gap={2} style={{ cursor: 'pointer' }}>
+    <>
       {filterValue === undefined ? (
         <FontAwesomeIcon icon={faFilter} onClick={handleFilterBy} size="xs" />
       ) : null}
@@ -38,8 +37,7 @@ function FilterByStatus({ column }: { column: any }) {
           onClick={handleFilterByFinished}
         />
       ) : null}
-      {column.id}
-    </Stack>
+    </>
   )
 }
 
