@@ -1,6 +1,6 @@
 import { useApi } from 'api'
 import { Invoice } from 'types'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import {
   useTable,
   usePagination,
@@ -21,14 +21,23 @@ import {
   faTrashCan,
   faCircleCheck,
 } from '@fortawesome/free-regular-svg-icons'
+import { useNavigate } from 'react-router'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
+  const navigate = useNavigate()
 
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(false)
   const [pageCount, setPageCount] = useState(0)
   const [totalEntries, setTotalEntries] = useState(0)
+
+  const handleGoToInvoiceDetails = useCallback(
+    (id: number) => {
+      navigate(`/invoice/${id}`)
+    },
+    [navigate]
+  )
 
   const columns: Array<Column<Invoice>> = useMemo(
     () => [
@@ -102,12 +111,13 @@ const InvoicesList = (): React.ReactElement => {
       {
         Header: 'Actions',
         disableSortBy: false,
-        Cell: () => (
+        Cell: ({ row }: { row: { original: Invoice } }) => (
           <Stack direction="horizontal" gap={3}>
             <FontAwesomeIcon
               icon={faFileLines}
               size="lg"
               style={{ cursor: 'pointer' }}
+              onClick={() => handleGoToInvoiceDetails(row.original.id)}
             />
             <FontAwesomeIcon
               icon={faCircleCheck}
@@ -123,7 +133,7 @@ const InvoicesList = (): React.ReactElement => {
         ),
       },
     ],
-    []
+    [handleGoToInvoiceDetails]
   )
 
   const {
