@@ -9,19 +9,23 @@ import {
   Column,
   CellProps,
 } from 'react-table'
-import { Table, Pagination, Form, InputGroup, Stack } from 'react-bootstrap'
+import {
+  Table,
+  Pagination,
+  Form,
+  InputGroup,
+  Stack,
+  Button,
+} from 'react-bootstrap'
 import PaginationItems from './PaginationItems'
 import PaginationControls from './PaginationControls'
 import InvoiceListSkeleton from './InvoiceListSkeleton'
 import FilterByStatus from './FilterByStatus'
 import SortableHeader from './SortableHeader'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faFileLines,
-  faTrashCan,
-  faCircleCheck,
-} from '@fortawesome/free-regular-svg-icons'
 import { useNavigate } from 'react-router'
+import SignFile from 'app/icons/SignFile'
+import DeleteFile from 'app/icons/DeleteFile'
+import File from 'app/icons/File'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
@@ -112,23 +116,28 @@ const InvoicesList = (): React.ReactElement => {
         Header: 'Actions',
         disableSortBy: false,
         Cell: ({ row }: { row: { original: Invoice } }) => (
-          <Stack direction="horizontal" gap={3}>
-            <FontAwesomeIcon
-              icon={faFileLines}
-              size="lg"
-              style={{ cursor: 'pointer' }}
+          <Stack direction="horizontal" gap={1}>
+            <Button
+              variant="link"
+              className="m-0 p-0"
               onClick={() => handleGoToInvoiceDetails(row.original.id)}
-            />
-            <FontAwesomeIcon
-              icon={faCircleCheck}
-              size="lg"
-              style={{ cursor: 'pointer' }}
-            />
-            <FontAwesomeIcon
-              icon={faTrashCan}
-              size="lg"
-              style={{ cursor: 'pointer' }}
-            />
+            >
+              <File />
+            </Button>
+            <Button
+              variant="link"
+              className="m-0 p-0"
+              onClick={() => handleGoToInvoiceDetails(row.original.id)}
+            >
+              <SignFile />
+            </Button>
+            <Button
+              variant="link"
+              className="m-0 p-0"
+              onClick={() => handleGoToInvoiceDetails(row.original.id)}
+            >
+              <DeleteFile />
+            </Button>
           </Stack>
         ),
       },
@@ -204,6 +213,7 @@ const InvoicesList = (): React.ReactElement => {
     }
 
     const options = defaultSizes.filter((size) => size < totalEntries)
+
     options.push(totalEntries)
 
     return options
