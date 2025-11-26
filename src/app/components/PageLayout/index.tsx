@@ -20,7 +20,7 @@ const PageLayout: React.FC<{ children?: ReactNode }> = ({ children }) => {
           </Container>
         </Navbar>
       </header>
-      <main>{children}</main>
+      <main className="py-2 container">{children}</main>
     </div>
   )
 }
