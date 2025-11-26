@@ -26,6 +26,8 @@ import { useNavigate } from 'react-router'
 import SignFile from 'app/icons/SignFile'
 import DeleteFile from 'app/icons/DeleteFile'
 import File from 'app/icons/File'
+import InvoiceFinalize from '../InvoiceFinalize'
+import InvoiceDelete from '../InvoiceDelete'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
@@ -35,6 +37,9 @@ const InvoicesList = (): React.ReactElement => {
   const [loading, setLoading] = useState(false)
   const [pageCount, setPageCount] = useState(0)
   const [totalEntries, setTotalEntries] = useState(0)
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<number>()
+  const [showFinalizeModal, setShowFinalizeModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const handleGoToInvoiceDetails = useCallback(
     (id: number) => {
@@ -127,14 +132,20 @@ const InvoicesList = (): React.ReactElement => {
             <Button
               variant="link"
               className="m-0 p-0"
-              onClick={() => handleGoToInvoiceDetails(row.original.id)}
+              onClick={() => {
+                setSelectedInvoiceId(row.original.id)
+                setShowFinalizeModal(true)
+              }}
             >
               <SignFile />
             </Button>
             <Button
               variant="link"
               className="m-0 p-0"
-              onClick={() => handleGoToInvoiceDetails(row.original.id)}
+              onClick={() => {
+                setSelectedInvoiceId(row.original.id)
+                setShowDeleteModal(true)
+              }}
             >
               <DeleteFile />
             </Button>
@@ -173,6 +184,10 @@ const InvoicesList = (): React.ReactElement => {
   )
 
   useEffect(() => {
+    if (selectedInvoiceId) {
+      return
+    }
+
     const fetchInvoices = async () => {
       setLoading(true)
 
@@ -186,8 +201,9 @@ const InvoicesList = (): React.ReactElement => {
       setTotalEntries(data.pagination.total_entries)
       setLoading(false)
     }
+
     fetchInvoices()
-  }, [api, pageIndex, pageSize])
+  }, [api, pageIndex, pageSize, selectedInvoiceId])
 
   const handleGoToFirstPage = () => {
     gotoPage(0)
@@ -220,6 +236,35 @@ const InvoicesList = (): React.ReactElement => {
       .sort((a, b) => a - b)
       .filter((value, index, self) => index === 0 || value !== self[index - 1])
   }, [totalEntries])
+
+  const handleFinalizeSuccess = (updatedInvoice: Invoice) => {
+    // Update the invoice in the list
+    setInvoices((prev) =>
+      prev.map((inv) => (inv.id === updatedInvoice.id ? updatedInvoice : inv))
+    )
+    setShowFinalizeModal(false)
+    setSelectedInvoiceId(undefined)
+  }
+
+  const handleFinalizeFailure = (error: unknown) => {
+    // eslint-disable-next-line no-console
+    console.error('Failed to finalize invoice:', error)
+    setShowFinalizeModal(false)
+    setSelectedInvoiceId(undefined)
+  }
+
+  const handleDeleteSuccess = () => {
+    // Refetch the current page to remove the deleted invoice
+    setShowDeleteModal(false)
+    setSelectedInvoiceId(undefined)
+  }
+
+  const handleDeleteFailure = (error: unknown) => {
+    // eslint-disable-next-line no-console
+    console.error('Failed to delete invoice:', error)
+    setShowDeleteModal(false)
+    setSelectedInvoiceId(undefined)
+  }
 
   return (
     <>
@@ -345,6 +390,18 @@ const InvoicesList = (): React.ReactElement => {
           </PaginationControls>
         </Pagination>
       </div>
+      <InvoiceFinalize
+        invoiceId={selectedInvoiceId}
+        open={showFinalizeModal}
+        onSuccess={handleFinalizeSuccess}
+        onFailure={handleFinalizeFailure}
+      />
+      <InvoiceDelete
+        invoiceId={selectedInvoiceId}
+        open={showDeleteModal}
+        onSuccess={handleDeleteSuccess}
+        onFailure={handleDeleteFailure}
+      />
     </>
   )
 }

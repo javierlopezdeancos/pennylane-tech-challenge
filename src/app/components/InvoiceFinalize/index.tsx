@@ -15,7 +15,7 @@ function InvoiceFinalize({
   onSuccess,
   open = false,
 }: {
-  invoiceId: number
+  invoiceId?: number
   onCancel?: () => void
   onFailure?: (error: unknown) => void
   onSuccess?: (invoice: Invoice) => void
@@ -61,16 +61,14 @@ function InvoiceFinalize({
         }
       )
 
+      setShowSuccess(true)
+
       if (onSuccess) {
         onSuccess(data)
       }
     } catch (err: any) {
       // eslint-disable-next-line no-console -- we want to log errors and don't allow silent errors
       console.error(err)
-
-      if (onFailure) {
-        onFailure(err)
-      }
 
       setShowFailure(true)
 
@@ -81,6 +79,10 @@ function InvoiceFinalize({
           JSON.parse(err.response.request.response).message +
           '.'
       )
+
+      if (onFailure) {
+        onFailure(err)
+      }
     } finally {
       setFinalizeLoading(false)
       setShowModal(false)

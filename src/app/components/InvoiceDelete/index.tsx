@@ -15,7 +15,7 @@ function InvoiceDelete({
   onSuccess,
   open = false,
 }: {
-  invoiceId: number
+  invoiceId?: number
   onCancel?: () => void
   onFailure?: (error: unknown) => void
   onLoading?: (loading: boolean) => void
@@ -54,16 +54,14 @@ function InvoiceDelete({
     try {
       await api.deleteInvoice({ id: invoiceId })
 
+      setShowSuccess(true)
+
       if (onSuccess) {
         onSuccess()
       }
     } catch (err: any) {
       // eslint-disable-next-line no-console
       console.error(err)
-
-      if (onFailure) {
-        onFailure(err)
-      }
 
       setShowFailure(true)
 
@@ -74,6 +72,10 @@ function InvoiceDelete({
           JSON.parse(err.response.request.response).message +
           '.'
       )
+
+      if (onFailure) {
+        onFailure(err)
+      }
     } finally {
       setLoading(false)
 
