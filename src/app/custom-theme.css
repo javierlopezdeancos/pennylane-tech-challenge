@@ -1,0 +1,88 @@
+:root {
+  --bs-primary: #013d3d;
+  --bs-primary-rgb: 1, 61, 61;
+  --bs-success: #08f871;
+  --bs-success-rgb: 8, 248, 113;
+  --bs-link-color: var(--bs-primary);
+  --bs-btn-primary-bg: var(--bs-primary);
+  --bs-btn-primary-border-color: var(--bs-primary);
+  --bs-btn-bg: var(--bs-primary);
+  --bs-btn-border-color: var(--bs-primary);
+}
+
+.btn-success {
+  color: #052e19;
+}
+
+.navbar-brand,
+.navbar-brand:hover,
+.navbar-brand:focus {
+  color: var(--bs-primary);
+}
+
+:root {
+  --bs-secondary: #6c757d;
+  --bs-info: #0dcaf0;
+  --bs-warning: #ffc107;
+  --bs-danger: #dc3545;
+  --bs-body-bg: #ffffff;
+  --bs-body-color: #0b2b2b;
+  --bs-heading-color: #032b2b;
+}
+
+.btn-primary {
+  color: #ffffff;
+}
+
+/* Override Bootstrap's .btn-primary CSS variables so the button uses the brand color */
+.btn-primary {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: var(--bs-primary);
+  --bs-btn-border-color: var(--bs-primary);
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: var(--bs-primary);
+  --bs-btn-hover-border-color: var(--bs-primary);
+  --bs-btn-focus-shadow-rgb: 1, 61, 61;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #012522;
+  --bs-btn-active-border-color: #012522;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #c9c9c9;
+  --bs-btn-disabled-bg: rgba(209, 211, 210, 0.5);
+  --bs-btn-disabled-border-color: rgba(209, 211, 210, 0.5);
+}
+
+.btn-success {
+  --bs-btn-color: var(--bs-primary);
+  --bs-btn-bg: var(--bs-success);
+  --bs-btn-border-color: var(--bs-success);
+  --bs-btn-hover-color: var(--bs-primary);
+  --bs-btn-hover-bg: #06df65;
+  --bs-btn-hover-border-color: #06df65;
+  --bs-btn-focus-shadow-rgb: 1, 61, 61;
+  --bs-btn-active-color: var(--bs-primary);
+  --bs-btn-active-bg: #05ae4f;
+  --bs-btn-active-border-color: #05ae4f;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #c9c9c9;
+  --bs-btn-disabled-bg: rgba(209, 211, 210, 0.5);
+  --bs-btn-disabled-border-color: rgba(209, 211, 210, 0.5);
+}
+
+.badge.bg-success,
+.bg-success {
+  background-color: var(--bs-success) !important;
+  color: #052e19 !important;
+}
+
+.text-brand {
+  color: var(--bs-primary) !important;
+}
+
+a {
+  color: var(--bs-link-color);
+}
+
+:focus {
+  outline-color: rgba(var(--bs-primary-rgb), 0.25);
+}
