@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 import InvoicesList from './components/InvoicesList'
 import InvoiceShow from './components/InvoiceShow'
+import InvoiceCreate from './components/InvoiceCreate'
 import PageLayout from './components/PageLayout'
 
 // import GettingStarted from './GettingStarted'
@@ -13,6 +14,7 @@ function App() {
         <PageLayout>
           <Routes>
             <Route path="/invoice/:id" Component={InvoiceShow} />
+            <Route path="/create" Component={InvoiceCreate} />
             <Route path="/" Component={InvoicesList} />
           </Routes>
         </PageLayout>

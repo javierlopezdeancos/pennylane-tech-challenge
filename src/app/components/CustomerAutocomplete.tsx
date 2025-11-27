@@ -19,9 +19,14 @@ const getCustomerLabel = (customer: Customer) => {
 const CustomerAutocomplete = ({ value, onChange }: Props) => {
   const api = useApi()
 
-  const loadOptions: LoadOptions<Customer, GroupBase<Customer>, {page: number}> = useCallback(
+  const loadOptions: LoadOptions<
+    Customer,
+    GroupBase<Customer>,
+    { page: number }
+  > = useCallback(
     async (search, loadedOptions, additional) => {
       const page = additional?.page ?? 1
+
       const { data } = await api.getSearchCustomers({
         query: search,
         per_page: 10,
@@ -47,6 +52,7 @@ const CustomerAutocomplete = ({ value, onChange }: Props) => {
       value={value}
       onChange={onChange}
       loadOptions={loadOptions}
+      isClearable
     />
   )
 }
