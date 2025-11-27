@@ -7,7 +7,7 @@ const PageLayout: React.FC<{ children?: ReactNode }> = ({ children }) => {
     <div>
       <header>
         <Navbar bg="white" expand="lg">
-          <Container className="py-2">
+          <Container>
             <Navbar.Brand href="/">
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <Logo width={30} />{' '}
@@ -20,7 +20,7 @@ const PageLayout: React.FC<{ children?: ReactNode }> = ({ children }) => {
           </Container>
         </Navbar>
       </header>
-      <main className="py-2 container">{children}</main>
+      <main className="container">{children}</main>
     </div>
   )
 }
