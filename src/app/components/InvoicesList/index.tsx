@@ -17,6 +17,7 @@ import {
   Stack,
   Button,
 } from 'react-bootstrap'
+import { Modal, Spinner, Toast, ToastContainer } from 'react-bootstrap'
 import PaginationItems from './PaginationItems'
 import PaginationControls from './PaginationControls'
 import InvoiceListSkeleton from './InvoiceListSkeleton'
@@ -34,12 +35,34 @@ const InvoicesList = (): React.ReactElement => {
   const navigate = useNavigate()
 
   const [invoices, setInvoices] = useState<Invoice[]>([])
+
   const [loading, setLoading] = useState(false)
+
   const [pageCount, setPageCount] = useState(0)
+
   const [totalEntries, setTotalEntries] = useState(0)
+
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<number>()
+
   const [showFinalizeModal, setShowFinalizeModal] = useState(false)
+
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false)
+
+  const [bulkAction, setBulkAction] = useState<'finalize' | 'delete' | null>(
+    null
+  )
+
+  const [bulkLoading, setBulkLoading] = useState(false)
+
+  const [bulkToast, setBulkToast] = useState<{
+    show: boolean
+    msg: string
+    success: boolean
+  }>({ show: false, msg: '', success: true })
 
   const handleGoToInvoiceDetails = useCallback(
     (id: number) => {
@@ -237,6 +260,132 @@ const InvoicesList = (): React.ReactElement => {
       .filter((value, index, self) => index === 0 || value !== self[index - 1])
   }, [totalEntries])
 
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const isAllPageSelected = () => {
+    if (!page || page.length === 0) return false
+    return page.every((r) => selectedIds.has((r.original as Invoice).id))
+  }
+
+  const toggleSelectAllPage = () => {
+    if (!page) return
+    const allSelected = isAllPageSelected()
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      page.forEach((r) => {
+        const id = (r.original as Invoice).id
+        if (allSelected) {
+          next.delete(id)
+        } else {
+          next.add(id)
+        }
+      })
+      return next
+    })
+  }
+
+  const selectedCount = selectedIds.size
+
+  const handleOpenBulk = (action: 'finalize' | 'delete') => {
+    setBulkAction(action)
+    setShowBulkConfirm(true)
+  }
+
+  const handleConfirmBulk = async () => {
+    if (!bulkAction) return
+    const ids = Array.from(selectedIds)
+    if (ids.length === 0) return
+
+    setBulkLoading(true)
+
+    try {
+      if (bulkAction === 'finalize') {
+        const results = await Promise.allSettled(
+          ids.map((id) =>
+            api.putInvoice({ id }, { invoice: { id, finalized: true } })
+          )
+        )
+
+        const successes: Invoice[] = []
+        const failures: any[] = []
+
+        results.forEach((r, idx) => {
+          if (r.status === 'fulfilled') {
+            successes.push(r.value.data)
+          } else {
+            failures.push({ id: ids[idx], reason: r })
+          }
+        })
+
+        if (successes.length) {
+          setInvoices((prev) =>
+            prev.map((inv) => {
+              const updated = successes.find((s) => s.id === inv.id)
+              return updated || inv
+            })
+          )
+        }
+
+        setBulkToast({
+          show: true,
+          msg: `Finalized ${successes.length} invoices, ${failures.length} failed.`,
+          success: failures.length === 0,
+        })
+        // remove successful ones from selection
+        setSelectedIds((prev) => {
+          const next = new Set(prev)
+          successes.forEach((s) => next.delete(s.id))
+          return next
+        })
+      } else if (bulkAction === 'delete') {
+        const results = await Promise.allSettled(
+          ids.map((id) => api.deleteInvoice({ id }))
+        )
+
+        const successes: number[] = []
+        const failures: any[] = []
+
+        results.forEach((r, idx) => {
+          if (r.status === 'fulfilled') successes.push(ids[idx])
+          else failures.push({ id: ids[idx], reason: r })
+        })
+
+        if (successes.length) {
+          setInvoices((prev) =>
+            prev.filter((inv) => !successes.includes(inv.id))
+          )
+        }
+
+        setBulkToast({
+          show: true,
+          msg: `Deleted ${successes.length} invoices, ${failures.length} failed.`,
+          success: failures.length === 0,
+        })
+
+        setSelectedIds((prev) => {
+          const next = new Set(prev)
+          successes.forEach((id) => next.delete(id))
+          return next
+        })
+      }
+    } catch (err: any) {
+      // eslint-disable-next-line no-console
+      console.error(err)
+      setBulkToast({ show: true, msg: 'Bulk action failed', success: false })
+    } finally {
+      setBulkLoading(false)
+      setShowBulkConfirm(false)
+      setBulkAction(null)
+    }
+  }
+
   const handleFinalizeSuccess = (updatedInvoice: Invoice) => {
     // Update the invoice in the list
     setInvoices((prev) =>
@@ -268,13 +417,59 @@ const InvoicesList = (): React.ReactElement => {
 
   return (
     <>
+      <div className="d-flex justify-content-between align-items-center mb-2 w-100">
+        <p className="text-start fs-5">{selectedCount} invoices selected.</p>
+        <div className="d-flex justify-content-end align-items-center mb-2">
+          <Button
+            variant="primary"
+            className="me-2"
+            onClick={() => {}}
+            disabled={selectedCount > 0 || bulkLoading || loading}
+          >
+            {bulkLoading ? (
+              <Spinner animation="border" size="sm" className="me-2" />
+            ) : null}
+            Create a new invoice
+          </Button>
+          <Button
+            variant="primary"
+            className="me-2"
+            onClick={() => handleOpenBulk('finalize')}
+            disabled={selectedCount > 0 || bulkLoading || loading}
+          >
+            {bulkLoading ? (
+              <Spinner animation="border" size="sm" className="me-2" />
+            ) : null}
+            Finalize selected
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => handleOpenBulk('delete')}
+            disabled={selectedCount > 0 || bulkLoading || loading}
+          >
+            {bulkLoading ? (
+              <Spinner animation="border" size="sm" className="me-2" />
+            ) : null}
+            Remove selected
+          </Button>
+        </div>
+      </div>
       <Table
         {...getTableProps()}
         className={`table ${loading ? '' : 'table-bordered table-striped'}`}
       >
         <thead>
-          {headerGroups.map((headerGroup) => (
+          {headerGroups.map((headerGroup, hgIndex) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
+              {/* selection header cell */}
+              <th style={{ verticalAlign: 'middle', padding: '8px' }}>
+                <Form.Check
+                  type="checkbox"
+                  aria-label="Select all"
+                  checked={isAllPageSelected()}
+                  onChange={() => toggleSelectAllPage()}
+                />
+              </th>
               {headerGroup.headers.map((column) => {
                 const sortProps = (column as any).getSortByToggleProps
                   ? (column as any).getSortByToggleProps()
@@ -330,12 +525,22 @@ const InvoicesList = (): React.ReactElement => {
         </thead>
         <tbody {...getTableBodyProps()}>
           {loading ? (
-            <InvoiceListSkeleton rows={pageSize} columns={columns.length} />
+            <InvoiceListSkeleton rows={pageSize} columns={columns.length + 1} />
           ) : (
             page.map((row) => {
               prepareRow(row)
+              const invoice = row.original as Invoice
+              const checked = selectedIds.has(invoice.id)
               return (
                 <tr {...row.getRowProps()}>
+                  <td style={{ verticalAlign: 'middle', padding: '8px' }}>
+                    <Form.Check
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleSelect(invoice.id)}
+                      aria-label={`Select invoice ${invoice.id}`}
+                    />
+                  </td>
                   {row.cells.map((cell) => (
                     <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
                   ))}
@@ -402,6 +607,60 @@ const InvoicesList = (): React.ReactElement => {
         onSuccess={handleDeleteSuccess}
         onFailure={handleDeleteFailure}
       />
+      <Modal
+        show={showBulkConfirm}
+        onHide={() => setShowBulkConfirm(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            Confirm Bulk {bulkAction === 'delete' ? 'Delete' : 'Finalize'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to{' '}
+          {bulkAction === 'delete' ? 'permanently delete' : 'finalize'} the
+          selected {selectedCount} invoices?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowBulkConfirm(false)}
+            disabled={bulkLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant={bulkAction === 'delete' ? 'danger' : 'primary'}
+            onClick={handleConfirmBulk}
+            disabled={bulkLoading}
+          >
+            {bulkLoading ? (
+              <Spinner size="sm" animation="border" className="me-2" />
+            ) : null}
+            Confirm
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <ToastContainer position="bottom-end">
+        <Toast
+          show={bulkToast.show}
+          onClose={() => setBulkToast((s) => ({ ...s, show: false }))}
+          bg={bulkToast.success ? 'success' : 'danger'}
+          delay={3000}
+          autohide
+        >
+          <Toast.Header>
+            <strong className="me-auto">
+              {bulkToast.success ? 'Success' : 'Error'}
+            </strong>
+          </Toast.Header>
+          <Toast.Body className={bulkToast.success ? '' : 'text-white'}>
+            {bulkToast.msg}
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
     </>
   )
 }
