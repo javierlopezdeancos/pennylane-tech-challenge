@@ -3,12 +3,20 @@ import { Button } from 'react-bootstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCaretLeft } from '@fortawesome/free-solid-svg-icons'
 
-const GoBack = () => {
+const GoBack = ({ backIsRoot = false }: { backIsRoot?: boolean }) => {
   const navigate = useNavigate()
 
+  const handleClick = () => {
+    if (backIsRoot) {
+      navigate('/')
+    } else {
+      navigate(-1)
+    }
+  }
+
   return (
-    <Button variant="link" onClick={() => navigate(-1)}>
-      <FontAwesomeIcon icon={faCaretLeft} /> go to home
+    <Button variant="link" onClick={handleClick}>
+      <FontAwesomeIcon icon={faCaretLeft} /> go back
     </Button>
   )
 }

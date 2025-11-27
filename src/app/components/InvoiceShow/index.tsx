@@ -112,11 +112,11 @@ const InvoiceShow = () => {
   }
 
   return (
-    <Container className="mt-4">
+    <Container>
       <Row className="mb-4">
         <Col className="d-flex justify-content-between align-items-center">
           <div>
-            <GoBack />
+            <GoBack backIsRoot />
             <h1>Invoice {invoice.id}</h1>
           </div>
           <div className="d-flex gap-2">
