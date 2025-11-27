@@ -69,6 +69,11 @@
   --bs-btn-disabled-border-color: rgba(209, 211, 210, 0.5);
 }
 
+.pagination {
+  --bs-pagination-active-bg: var(--bs-primary);
+  --bs-pagination-active-border-color: var(--bs-primary);
+}
+
 .badge.bg-success,
 .bg-success {
   background-color: var(--bs-success) !important;
