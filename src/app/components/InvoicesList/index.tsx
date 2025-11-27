@@ -270,13 +270,20 @@ const InvoicesList = (): React.ReactElement => {
   }
 
   const isAllPageSelected = () => {
-    if (!page || page.length === 0) return false
+    if (!page || page.length === 0) {
+      return false
+    }
+
     return page.every((r) => selectedIds.has((r.original as Invoice).id))
   }
 
   const toggleSelectAllPage = () => {
-    if (!page) return
+    if (!page) {
+      return
+    }
+
     const allSelected = isAllPageSelected()
+
     setSelectedIds((prev) => {
       const next = new Set(prev)
       page.forEach((r) => {
@@ -299,9 +306,15 @@ const InvoicesList = (): React.ReactElement => {
   }
 
   const handleConfirmBulk = async () => {
-    if (!bulkAction) return
+    if (!bulkAction) {
+      return
+    }
+
     const ids = Array.from(selectedIds)
-    if (ids.length === 0) return
+
+    if (ids.length === 0) {
+      return
+    }
 
     setBulkLoading(true)
 
@@ -338,7 +351,7 @@ const InvoicesList = (): React.ReactElement => {
           msg: `Finalized ${successes.length} invoices, ${failures.length} failed.`,
           success: failures.length === 0,
         })
-        // remove successful ones from selection
+
         setSelectedIds((prev) => {
           const next = new Set(prev)
           successes.forEach((s) => next.delete(s.id))
@@ -378,6 +391,7 @@ const InvoicesList = (): React.ReactElement => {
     } catch (err: any) {
       // eslint-disable-next-line no-console
       console.error(err)
+
       setBulkToast({ show: true, msg: 'Bulk action failed', success: false })
     } finally {
       setBulkLoading(false)
@@ -387,10 +401,10 @@ const InvoicesList = (): React.ReactElement => {
   }
 
   const handleFinalizeSuccess = (updatedInvoice: Invoice) => {
-    // Update the invoice in the list
     setInvoices((prev) =>
       prev.map((inv) => (inv.id === updatedInvoice.id ? updatedInvoice : inv))
     )
+
     setShowFinalizeModal(false)
     setSelectedInvoiceId(undefined)
   }
@@ -398,12 +412,12 @@ const InvoicesList = (): React.ReactElement => {
   const handleFinalizeFailure = (error: unknown) => {
     // eslint-disable-next-line no-console
     console.error('Failed to finalize invoice:', error)
+
     setShowFinalizeModal(false)
     setSelectedInvoiceId(undefined)
   }
 
   const handleDeleteSuccess = () => {
-    // Refetch the current page to remove the deleted invoice
     setShowDeleteModal(false)
     setSelectedInvoiceId(undefined)
   }
@@ -411,6 +425,7 @@ const InvoicesList = (): React.ReactElement => {
   const handleDeleteFailure = (error: unknown) => {
     // eslint-disable-next-line no-console
     console.error('Failed to delete invoice:', error)
+
     setShowDeleteModal(false)
     setSelectedInvoiceId(undefined)
   }
@@ -420,22 +435,20 @@ const InvoicesList = (): React.ReactElement => {
       <div className="d-flex justify-content-between align-items-center mb-2 w-100">
         <p className="text-start fs-5">{selectedCount} invoices selected.</p>
         <div className="d-flex justify-content-end align-items-center mb-2">
-          <Button
-            variant="primary"
-            className="me-2"
-            onClick={() => {}}
-            disabled={selectedCount > 0 || bulkLoading || loading}
-          >
-            {bulkLoading ? (
-              <Spinner animation="border" size="sm" className="me-2" />
-            ) : null}
-            Create a new invoice
-          </Button>
+          <div>
+            <Button
+              variant="primary"
+              className="me-2"
+              onClick={() => navigate('/create')}
+            >
+              Create invoice
+            </Button>
+          </div>
           <Button
             variant="primary"
             className="me-2"
             onClick={() => handleOpenBulk('finalize')}
-            disabled={selectedCount > 0 || bulkLoading || loading}
+            disabled={selectedCount === 0 || bulkLoading || loading}
           >
             {bulkLoading ? (
               <Spinner animation="border" size="sm" className="me-2" />
@@ -445,7 +458,7 @@ const InvoicesList = (): React.ReactElement => {
           <Button
             variant="danger"
             onClick={() => handleOpenBulk('delete')}
-            disabled={selectedCount > 0 || bulkLoading || loading}
+            disabled={selectedCount === 0 || bulkLoading || loading}
           >
             {bulkLoading ? (
               <Spinner animation="border" size="sm" className="me-2" />
