@@ -31,11 +31,6 @@
 }
 
 .btn-primary {
-  color: #ffffff;
-}
-
-/* Override Bootstrap's .btn-primary CSS variables so the button uses the brand color */
-.btn-primary {
   --bs-btn-color: #ffffff;
   --bs-btn-bg: var(--bs-primary);
   --bs-btn-border-color: var(--bs-primary);
@@ -50,6 +45,7 @@
   --bs-btn-disabled-color: #c9c9c9;
   --bs-btn-disabled-bg: rgba(209, 211, 210, 0.5);
   --bs-btn-disabled-border-color: rgba(209, 211, 210, 0.5);
+  color: #ffffff;
 }
 
 .btn-success {
@@ -72,6 +68,11 @@
 .pagination {
   --bs-pagination-active-bg: var(--bs-primary);
   --bs-pagination-active-border-color: var(--bs-primary);
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);;
 }
 
 .badge.bg-success,
