@@ -121,16 +121,6 @@ const InvoiceShow = () => {
           </div>
           <div className="d-flex gap-2">
             <Button
-              variant="danger"
-              onClick={deleteInvoice}
-              disabled={actionLoading}
-            >
-              {actionLoading && showDeleteModal ? (
-                <Spinner animation="border" size="sm" className="me-2" />
-              ) : null}
-              REMOVE
-            </Button>
-            <Button
               variant="primary"
               onClick={finalizeInvoice}
               disabled={invoice.finalized || actionLoading}
@@ -138,7 +128,17 @@ const InvoiceShow = () => {
               {actionLoading && showFinalizeModal ? (
                 <Spinner animation="border" size="sm" className="me-2" />
               ) : null}
-              FINALIZE
+              Finalize Invoice
+            </Button>
+            <Button
+              variant="danger"
+              onClick={deleteInvoice}
+              disabled={actionLoading}
+            >
+              {actionLoading && showDeleteModal ? (
+                <Spinner animation="border" size="sm" className="me-2" />
+              ) : null}
+              Remove Invoice
             </Button>
           </div>
         </Col>
