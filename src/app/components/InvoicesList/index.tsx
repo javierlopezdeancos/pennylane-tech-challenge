@@ -29,6 +29,7 @@ import DeleteFile from 'app/icons/DeleteFile'
 import File from 'app/icons/File'
 import InvoiceFinalize from '../InvoiceFinalize'
 import InvoiceDelete from '../InvoiceDelete'
+import EditFile from 'app/icons/EditFile'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
@@ -69,6 +70,29 @@ const InvoicesList = (): React.ReactElement => {
       navigate(`/invoice/${id}`)
     },
     [navigate]
+  )
+
+  const handleGoToEditInvoice = useCallback(
+    (id: number) => {
+      navigate(`/invoice/${id}/edit`)
+    },
+    [navigate]
+  )
+
+  const handleFinalizeInvoice = useCallback(
+    (invoiceId: number) => {
+      setSelectedInvoiceId(invoiceId)
+      setShowFinalizeModal(true)
+    },
+    [setSelectedInvoiceId, setShowFinalizeModal]
+  )
+
+  const handleDeleteInvoice = useCallback(
+    (invoiceId: number) => {
+      setSelectedInvoiceId(invoiceId)
+      setShowDeleteModal(true)
+    },
+    [setSelectedInvoiceId, setShowDeleteModal]
   )
 
   const columns: Array<Column<Invoice>> = useMemo(
@@ -155,20 +179,21 @@ const InvoicesList = (): React.ReactElement => {
             <Button
               variant="link"
               className="m-0 p-0"
-              onClick={() => {
-                setSelectedInvoiceId(row.original.id)
-                setShowFinalizeModal(true)
-              }}
+              onClick={() => handleGoToEditInvoice(row.original.id)}
+            >
+              <EditFile />
+            </Button>
+            <Button
+              variant="link"
+              className="m-0 p-0"
+              onClick={() => handleFinalizeInvoice(row.original.id)}
             >
               <SignFile />
             </Button>
             <Button
               variant="link"
               className="m-0 p-0"
-              onClick={() => {
-                setSelectedInvoiceId(row.original.id)
-                setShowDeleteModal(true)
-              }}
+              onClick={() => handleDeleteInvoice(row.original.id)}
             >
               <DeleteFile />
             </Button>
@@ -176,7 +201,12 @@ const InvoicesList = (): React.ReactElement => {
         ),
       },
     ],
-    [handleGoToInvoiceDetails]
+    [
+      handleGoToInvoiceDetails,
+      handleGoToEditInvoice,
+      handleFinalizeInvoice,
+      handleDeleteInvoice,
+    ]
   )
 
   const {
@@ -389,7 +419,6 @@ const InvoicesList = (): React.ReactElement => {
         })
       }
     } catch (err: any) {
-      // eslint-disable-next-line no-console
       console.error(err)
 
       setBulkToast({ show: true, msg: 'Bulk action failed', success: false })
@@ -410,7 +439,6 @@ const InvoicesList = (): React.ReactElement => {
   }
 
   const handleFinalizeFailure = (error: unknown) => {
-    // eslint-disable-next-line no-console
     console.error('Failed to finalize invoice:', error)
 
     setShowFinalizeModal(false)
@@ -423,7 +451,6 @@ const InvoicesList = (): React.ReactElement => {
   }
 
   const handleDeleteFailure = (error: unknown) => {
-    // eslint-disable-next-line no-console
     console.error('Failed to delete invoice:', error)
 
     setShowDeleteModal(false)
@@ -474,7 +501,6 @@ const InvoicesList = (): React.ReactElement => {
         <thead>
           {headerGroups.map((headerGroup, hgIndex) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
-              {/* selection header cell */}
               <th style={{ verticalAlign: 'middle', padding: '8px' }}>
                 <Form.Check
                   type="checkbox"
@@ -542,8 +568,10 @@ const InvoicesList = (): React.ReactElement => {
           ) : (
             page.map((row) => {
               prepareRow(row)
+
               const invoice = row.original as Invoice
               const checked = selectedIds.has(invoice.id)
+
               return (
                 <tr {...row.getRowProps()}>
                   <td style={{ verticalAlign: 'middle', padding: '8px' }}>
@@ -655,7 +683,6 @@ const InvoicesList = (): React.ReactElement => {
           </Button>
         </Modal.Footer>
       </Modal>
-
       <ToastContainer position="bottom-end">
         <Toast
           show={bulkToast.show}

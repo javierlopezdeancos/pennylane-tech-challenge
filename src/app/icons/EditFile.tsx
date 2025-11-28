@@ -1,4 +1,4 @@
-export function DeleteFile({
+export function EditFile({
   color = 'currentColor',
   sizeInPixels = 24,
 }: {
@@ -18,10 +18,10 @@ export function DeleteFile({
           d="M7 21a2 2 0 0 1-2-2V3h9l5 5v11a2 2 0 0 1-2 2z"
         />
         <path d="M13 3v6h6" />
-        <path stroke-linecap="round" d="m10 13l4 4m-4 0l4-4" />
+        <path stroke-linecap="round" d="M9 13h6m-6 4h6" />
       </g>
     </svg>
   )
 }
 
-export default DeleteFile
+export default EditFile
