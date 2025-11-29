@@ -133,6 +133,8 @@ Steps to deploy the app:
 
 ## Solution Implementation
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/b2f0343a-9da4-43b1-8a21-fe2de0a59dce/deploy-status)](https://app.netlify.com/projects/pennylane-tech-challenge/deploys)
+
 ### Overview
 
 This invoice editor prototype has been built following React best practices with a focus on user experience, code quality, and maintainability. The application provides a complete CRUD interface for invoice management with additional features for bulk operations and filtering.
