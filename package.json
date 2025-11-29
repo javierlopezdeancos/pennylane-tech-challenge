@@ -9,7 +9,10 @@
     "eject": "react-scripts eject",
     "eject_ts": "./bin/eject_ts",
     "openapi:gen": "yarn -s typegen src/api/schema.yml > src/api/gen/client.d.ts && yarn openapi:convert",
-    "openapi:convert": "npx @redocly/openapi-cli bundle ./src/api/schema.yml -o ./src/api/gen/schema.json --format json"
+    "openapi:convert": "npx @redocly/openapi-cli bundle ./src/api/schema.yml -o ./src/api/gen/schema.json --format json",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "6.4.0",
@@ -58,6 +61,7 @@
     ]
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@redocly/openapi-cli": "1.0.0-beta.95",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "13.4.0",
