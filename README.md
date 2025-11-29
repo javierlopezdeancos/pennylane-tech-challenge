@@ -17,7 +17,7 @@ This prototype allows users to perform simple actions around their invoices:
 - Manage existing invoices
   - Finalize invoices
   - Delete invoices
- 
+
 We do not expect the prototype to be UI-rich as we'll mainly focus on code quality & user experience. We expect you to adopt standard coding practices & setup, including testing, as if you were working on a real application with other coworkers.
 
 Feel free to use pre-installed dependencies or add new ones if you have a legitimate use of them.
@@ -114,15 +114,193 @@ Therefore, we suggest you use the associated CLI of the PaaS or their drag-and-d
 One potential free solution to deploy the app is to use Cloudflare Pages.
 
 Prerequisite:
+
 - **Have a personal Cloudflare account (this is free)**. If you don't have one, [you can easily sign up on the Cloudflare website.](https://dash.cloudflare.com/sign-up/workers-and-pages)
 
 Steps to deploy the app:
+
 1. **Run `yarn build`**: This command will compile your application.
 
-2. **Install Wrangler (Cloudflare CLI) globally via npm using `npm install -g wrangler`**: Wrangler is a command-line tool that allows you to interact with Cloudflare services. 
+2. **Install Wrangler (Cloudflare CLI) globally via npm using `npm install -g wrangler`**: Wrangler is a command-line tool that allows you to interact with Cloudflare services.
 
 2. **Run `wrangler pages project create <my-react-app>` (replace <my-react-app> with the name of your app)**: This command creates a new project on Cloudflare Pages. It will open an OAuth page to authorize Cloudflare with your GitHub account. At the end, it will provide you with a stable link to access your app.
 
 3. **Run `wrangler pages deploy build`**: This command triggers a new deployment of your app. You need to run it every time you want to deploy changes to your app.
 
 4. **Run `wrangler pages project list`** if you don't remember the URL of your app: This will list all your Cloudflare projects and their corresponding URLs.
+
+---
+
+## Solution Implementation
+
+### Overview
+
+This invoice editor prototype has been built following React best practices with a focus on user experience, code quality, and maintainability. The application provides a complete CRUD interface for invoice management with additional features for bulk operations and filtering.
+
+### Implemented Features
+
+#### 1. Invoices List (`/`)
+
+- **Data Table with react-table**: Server-side paginated table displaying invoices with customer info, totals, status, and dates
+- **Sortable Columns**: Total, Tax, Date, and Deadline columns support ascending/descending sorting
+- **Filtering**: Filter invoices by Finalized and Paid status using dropdown filters in column headers
+- **Pagination Controls**: Navigate between pages with first/previous/next/last buttons, page size selector, and direct page input
+- **Row Selection**: Checkbox selection for individual rows and "select all" for the current page
+- **Bulk Actions**: Finalize or delete multiple selected invoices simultaneously with confirmation modals
+- **Quick Actions**: Each row has action buttons to view, edit, finalize, or delete individual invoices
+
+#### 2. Create Invoice (`/create`)
+
+- **Customer Autocomplete**: Async paginated search for customers using `react-select-async-paginate`
+- **Product Autocomplete**: Same async paginated search for products in invoice lines
+- **Dynamic Lines**: Add/remove invoice line items with product selection and quantity input
+- **Form Validation**: Create button is disabled until customer and at least one valid line (product + quantity > 0) are provided
+- **Invoice Properties**: Toggle checkboxes for Finalized and Paid status
+- **Date Fields**: Invoice date (defaults to today) and deadline date pickers
+- **Toast Notifications**: Success/error feedback after submission with auto-redirect to invoice detail
+
+#### 3. Invoice Detail View (`/invoice/:id`)
+
+- **Customer Information Card**: Displays customer name, address, city, country with country flag (using `react-country-flag`)
+- **Invoice Information Card**: Shows invoice date, deadline, finalized status (Draft/Finalized badge), and payment status (Paid/Unpaid badge)
+- **Invoice Items Table**: Lists all line items with product details, unit price, quantity, unit, VAT rate, tax, and line total
+- **Summary Card**: Displays subtotal, tax, and grand total calculations
+- **Action Buttons**: Finalize (disabled if already finalized) and Remove invoice buttons
+- **Loading Skeleton**: Shows placeholder UI while fetching invoice data
+
+#### 4. Edit Invoice (`/invoice/:id/edit`)
+
+- **Pre-populated Form**: Loads existing invoice data including customer, dates, status, and lines
+- **Line Management**:
+  - Existing lines can be marked for deletion (soft delete with `_destroy` flag) and restored
+  - New lines can be added and removed
+  - Visual feedback for deleted lines (opacity + strikethrough)
+- **Same Validation**: Requires customer and at least one active valid line
+- **Update Flow**: Submits changes via PUT request with proper `invoice_lines_attributes` structure
+
+#### 5. Reusable Components
+
+- **InvoiceFinalize**: Modal component for confirming invoice finalization with loading states and toast feedback
+- **InvoiceDelete**: Modal component for confirming invoice deletion with loading states and toast feedback
+- **GoBack**: Navigation component with optional "back to root" behavior
+- **PageLayout**: Wrapper with logo and consistent page structure
+- **Loading Skeletons**: Placeholder UI components for list and detail views
+
+### Technical Decisions
+
+#### State Management
+
+- **Local State with useState**: Chose local component state over global state management (Redux/Context) as the app has clear component boundaries and no complex cross-component state sharing needs
+- **Server State**: Each page fetches its own data; no client-side caching to ensure fresh data
+
+#### UI Framework
+
+- **React Bootstrap**: Used for consistent, responsive UI components (Cards, Tables, Modals, Forms, Buttons, Toasts)
+- **Custom Icons**: SVG icon components for action buttons (File, EditFile, SignFile, DeleteFile)
+
+#### Data Fetching
+
+- **openapi-client-axios**: Leveraged the provided API client for type-safe API calls
+- **Async Paginate**: Used `react-select-async-paginate` for customer/product search with infinite scroll
+
+#### Table Implementation
+
+- **react-table v7**: Used with manual pagination, sorting, and filtering plugins
+- **Server-side Pagination**: All pagination is handled server-side; client sends page/per_page params
+
+#### Form Handling
+
+- **Controlled Components**: All form inputs are fully controlled for predictable state
+- **Validation Logic**: `canSubmit()` function checks all required fields before enabling submit buttons
+
+#### Error Handling
+
+- **Try/Catch with Toast Feedback**: All API calls wrapped with error handling and user-friendly toast messages
+- **Console Logging**: Errors logged to console for debugging (with eslint-disable comments as required)
+
+#### Routing
+
+- **React Router v6**: Clean route structure with nested layouts
+  - `/` - Invoices list
+  - `/create` - Create new invoice
+  - `/invoice/:id` - View invoice details
+  - `/invoice/:id/edit` - Edit invoice
+
+### Testing Strategy
+
+#### E2E Tests with Playwright
+
+Tests are organized by feature/route in separate spec files:
+
+- `InvoicesList.spec.ts` - List loading, filtering, sorting, row selection, bulk actions
+- `InvoiceCreate.spec.ts` - Form loading, validation, invoice creation, line management
+- `InvoicesShow.spec.ts` - Detail display, action buttons, navigation
+- `InvoicesEdit.spec.ts` - Form pre-population, editing, line delete/restore
+- `InvoicesCrossRouteNavigation.spec.ts` - Navigation flows between routes
+
+#### Test Fixtures
+
+- **API Mocking**: Custom Playwright fixture (`api-mock.ts`) intercepts all API calls and returns mock data
+- **Mock Data**: Centralized mock data (`mock-data.ts`) for consistent test scenarios
+
+### Advanced Features & Ideas for Future Development
+
+#### 1. Invoice PDF Export
+
+- **Motivation**: Users need to share or print invoices
+- **Implementation**: Use libraries like `@react-pdf/renderer` or `html2pdf.js` to generate downloadable PDFs
+- **API Limitation**: Would need a PDF generation endpoint or client-side rendering
+
+#### 2. Invoice Duplication
+
+- **Motivation**: Creating similar invoices is a common workflow
+- **Implementation**: "Duplicate" button that pre-fills the create form with existing invoice data
+- **Requirements**: Copy all line items with ability to modify before saving
+
+#### 3. Advanced Filtering
+
+- **Motivation**: Finding invoices by date range, customer, amount, etc.
+- **Implementation**: Filter panel with date pickers, customer autocomplete, amount range inputs
+- **API Support**: The API supports filter query params as documented
+
+#### 4. Dashboard with Analytics
+
+- **Motivation**: Business insights on revenue, outstanding payments, overdue invoices
+- **Implementation**: Summary cards, charts (using Chart.js or Recharts), and KPI metrics
+- **Requirements**: Aggregation endpoints or client-side calculation from invoice data
+
+#### 5. Email Invoice
+
+- **Motivation**: Send invoices directly to customers
+- **Implementation**: Email composition modal with customer email pre-filled, customizable message
+- **API Limitation**: Would require email sending endpoint on the backend
+
+#### 6. Invoice Templates
+
+- **Motivation**: Consistent branding and format for different invoice types
+- **Implementation**: Template selection in create/edit, stored templates with default products/settings
+- **Requirements**: Template storage and management endpoints
+
+#### 7. Recurring Invoices
+
+- **Motivation**: Subscription-based billing automation
+- **Implementation**: Schedule configuration (weekly/monthly/yearly), auto-generation logic
+- **API Limitation**: Would need scheduling/cron job support on backend
+
+#### 8. Multi-currency Support
+
+- **Motivation**: International invoicing
+- **Implementation**: Currency selector, exchange rate integration, currency formatting
+- **Requirements**: Currency conversion API and currency field on invoice model
+
+#### 9. Offline Support
+
+- **Motivation**: Work without internet connection
+- **Implementation**: Service Worker, IndexedDB for local storage, sync queue
+- **Complexity**: Conflict resolution, optimistic updates, background sync
+
+#### 10. Keyboard Shortcuts
+
+- **Motivation**: Power user efficiency
+- **Implementation**: Global shortcuts for common actions (Ctrl+N for new, Ctrl+S for save, etc.)
+- **Library**: Could use `react-hotkeys-hook` for implementation
