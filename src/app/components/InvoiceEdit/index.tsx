@@ -314,7 +314,7 @@ const InvoiceEdit = (): React.ReactElement => {
                               onClick={() => toggleDestroyLine(idx)}
                               size="sm"
                             >
-                              {l._destroy ? 'Restore' : 'Delete'}
+                              {l._destroy ? 'Restore' : 'Remove'}
                             </Button>
                           ) : (
                             <Button
@@ -338,7 +338,7 @@ const InvoiceEdit = (): React.ReactElement => {
                 </Card>
                 <div className="d-flex justify-content-end">
                   <Button
-                    variant="secondary"
+                    variant="danger"
                     className="me-2"
                     onClick={() => navigate(-1)}
                     disabled={submitting}
