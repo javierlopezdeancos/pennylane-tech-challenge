@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-regular-svg-icons'
 import { Invoice } from 'types'
 
-function InvoiceFinalize({
+function InvoicePay({
   invoiceId,
   onCancel,
   onFailure,
@@ -27,13 +27,13 @@ function InvoiceFinalize({
   const [showSuccess, setShowSuccess] = useState(false)
   const [showFailure, setShowFailure] = useState(false)
   const [failureMessage, setFailureMessage] = useState('')
-  const [finalizeLoading, setFinalizeLoading] = useState(false)
+  const [payLoading, setPayLoading] = useState(false)
 
   useEffect(() => {
     setShowModal(open)
   }, [open])
 
-  const handleCloseFinalizeModal = () => {
+  const handleClosePayModal = () => {
     if (onCancel) {
       onCancel()
     }
@@ -41,12 +41,12 @@ function InvoiceFinalize({
     setShowModal(false)
   }
 
-  const handleConfirmFinalize = async () => {
+  const handleConfirmPay = async () => {
     if (!invoiceId) {
       return
     }
 
-    setFinalizeLoading(true)
+    setPayLoading(true)
 
     try {
       const { data } = await api.putInvoice(
@@ -56,7 +56,7 @@ function InvoiceFinalize({
         {
           invoice: {
             id: invoiceId,
-            finalized: true,
+            paid: true,
           },
         }
       )
@@ -73,7 +73,7 @@ function InvoiceFinalize({
       setShowFailure(true)
 
       setFailureMessage(
-        'Failed finalizing invoice ' +
+        'Failed paying invoice ' +
           invoiceId +
           ' because, ' +
           JSON.parse(err.response.request.response).message +
@@ -84,7 +84,7 @@ function InvoiceFinalize({
         onFailure(err)
       }
     } finally {
-      setFinalizeLoading(false)
+      setPayLoading(false)
       setShowModal(false)
     }
   }
@@ -99,27 +99,27 @@ function InvoiceFinalize({
 
   return (
     <>
-      <Modal show={showModal} onHide={handleCloseFinalizeModal} centered>
+      <Modal show={showModal} onHide={handleClosePayModal} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Confirm Finalize</Modal.Title>
+          <Modal.Title>Confirm Payment</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to mark invoice #{invoiceId} as finalized?
+          Are you sure you want to mark invoice #{invoiceId} as paid?
         </Modal.Body>
         <Modal.Footer>
           <Button
             variant="danger"
-            onClick={handleCloseFinalizeModal}
-            disabled={finalizeLoading}
+            onClick={handleClosePayModal}
+            disabled={payLoading}
           >
             Cancel
           </Button>
           <Button
             variant="primary"
-            onClick={handleConfirmFinalize}
-            disabled={finalizeLoading}
+            onClick={handleConfirmPay}
+            disabled={payLoading}
           >
-            {finalizeLoading ? (
+            {payLoading ? (
               <Spinner size="sm" animation="border" className="me-2" />
             ) : null}
             Confirm
@@ -138,7 +138,7 @@ function InvoiceFinalize({
             <FontAwesomeIcon icon={faCircleCheck} className="me-2" />
             <strong className="me-auto">Success</strong>
           </Toast.Header>
-          <Toast.Body>Your invoice {invoiceId} has been finalized.</Toast.Body>
+          <Toast.Body>Your invoice {invoiceId} has been paid.</Toast.Body>
         </Toast>
       </ToastContainer>
       <ToastContainer position="bottom-end">
@@ -160,4 +160,4 @@ function InvoiceFinalize({
   )
 }
 
-export default InvoiceFinalize
+export default InvoicePay

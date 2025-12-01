@@ -14,22 +14,23 @@ import {
   Pagination,
   Form,
   InputGroup,
-  Stack,
   Button,
+  OverlayTrigger,
+  Popover,
+  ListGroup,
 } from 'react-bootstrap'
 import { Modal, Spinner, Toast, ToastContainer } from 'react-bootstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
 import PaginationItems from './PaginationItems'
 import PaginationControls from './PaginationControls'
 import InvoiceListSkeleton from './InvoiceListSkeleton'
 import FilterByStatus from './FilterByStatus'
 import SortableHeader from './SortableHeader'
 import { useNavigate } from 'react-router'
-import SignFile from 'app/icons/SignFile'
-import DeleteFile from 'app/icons/DeleteFile'
-import File from 'app/icons/File'
 import InvoiceFinalize from '../InvoiceFinalize'
 import InvoiceDelete from '../InvoiceDelete'
-import EditFile from 'app/icons/EditFile'
+import InvoicePay from '../InvoicePay'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
@@ -48,6 +49,8 @@ const InvoicesList = (): React.ReactElement => {
   const [showFinalizeModal, setShowFinalizeModal] = useState(false)
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  const [showPayModal, setShowPayModal] = useState(false)
 
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
 
@@ -85,12 +88,12 @@ const InvoicesList = (): React.ReactElement => {
     [setSelectedInvoiceId, setShowFinalizeModal]
   )
 
-  const handleDeleteInvoice = useCallback(
+  const handlePayInvoice = useCallback(
     (invoiceId: number) => {
       setSelectedInvoiceId(invoiceId)
-      setShowDeleteModal(true)
+      setShowPayModal(true)
     },
-    [setSelectedInvoiceId, setShowDeleteModal]
+    [setSelectedInvoiceId, setShowPayModal]
   )
 
   const columns: Array<Column<Invoice>> = useMemo(
@@ -163,39 +166,54 @@ const InvoicesList = (): React.ReactElement => {
         ),
       },
       {
-        Header: 'Actions',
-        disableSortBy: false,
+        Header: '',
+        id: 'actions',
+        disableSortBy: true,
         Cell: ({ row }: { row: { original: Invoice } }) => (
-          <Stack direction="horizontal" gap={1}>
+          <OverlayTrigger
+            trigger="click"
+            placement="left"
+            rootClose
+            overlay={
+              <Popover id={`popover-actions-${row.original.id}`}>
+                <Popover.Body className="p-0">
+                  <ListGroup variant="flush">
+                    <ListGroup.Item
+                      action
+                      onClick={() => handleGoToInvoiceDetails(row.original.id)}
+                    >
+                      View details
+                    </ListGroup.Item>
+                    <ListGroup.Item
+                      action
+                      onClick={() => handleGoToEditInvoice(row.original.id)}
+                    >
+                      Edit
+                    </ListGroup.Item>
+                    <ListGroup.Item
+                      action
+                      onClick={() => handlePayInvoice(row.original.id)}
+                    >
+                      Pay
+                    </ListGroup.Item>
+                    <ListGroup.Item
+                      action
+                      onClick={() => handleFinalizeInvoice(row.original.id)}
+                    >
+                      Finalize
+                    </ListGroup.Item>
+                  </ListGroup>
+                </Popover.Body>
+              </Popover>
+            }
+          >
             <Button
               variant="link"
-              className="m-0 p-0"
-              onClick={() => handleGoToInvoiceDetails(row.original.id)}
+              className="p-0 text-dark border-0 shadow-none"
             >
-              <File />
+              <FontAwesomeIcon icon={faEllipsisVertical} />
             </Button>
-            <Button
-              variant="link"
-              className="m-0 p-0"
-              onClick={() => handleGoToEditInvoice(row.original.id)}
-            >
-              <EditFile />
-            </Button>
-            <Button
-              variant="link"
-              className="m-0 p-0"
-              onClick={() => handleFinalizeInvoice(row.original.id)}
-            >
-              <SignFile />
-            </Button>
-            <Button
-              variant="link"
-              className="m-0 p-0"
-              onClick={() => handleDeleteInvoice(row.original.id)}
-            >
-              <DeleteFile />
-            </Button>
-          </Stack>
+          </OverlayTrigger>
         ),
       },
     ],
@@ -203,7 +221,7 @@ const InvoicesList = (): React.ReactElement => {
       handleGoToInvoiceDetails,
       handleGoToEditInvoice,
       handleFinalizeInvoice,
-      handleDeleteInvoice,
+      handlePayInvoice,
     ]
   )
 
@@ -471,6 +489,20 @@ const InvoicesList = (): React.ReactElement => {
     setSelectedInvoiceId(undefined)
   }
 
+  const handlePaySuccess = (paidInvoice: Invoice) => {
+    setInvoices((prev) => prev.filter((inv) => inv.id !== paidInvoice.id))
+
+    setShowPayModal(false)
+    setSelectedInvoiceId(undefined)
+  }
+
+  const handlePayFailure = (error: unknown) => {
+    console.error('Failed to pay invoice:', error)
+
+    setShowPayModal(false)
+    setSelectedInvoiceId(undefined)
+  }
+
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-2 w-100">
@@ -660,6 +692,12 @@ const InvoicesList = (): React.ReactElement => {
         open={showDeleteModal}
         onSuccess={handleDeleteSuccess}
         onFailure={handleDeleteFailure}
+      />
+      <InvoicePay
+        invoiceId={selectedInvoiceId}
+        open={showPayModal}
+        onSuccess={handlePaySuccess}
+        onFailure={handlePayFailure}
       />
       <Modal
         show={showBulkConfirm}
