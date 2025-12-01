@@ -150,8 +150,8 @@ This invoice editor prototype has been built following React best practices with
 - **Filtering**: Filter invoices by customer autocomplete or by Finalized and Paid status using dropdown filters in column headers
 - **Pagination Controls**: Navigate between pages with first/previous/next/last buttons, page size selector, and direct page input
 - **Row Selection**: Checkbox selection for individual rows and "select all" for the current page
-- **Bulk Actions**: Finalize or delete multiple selected invoices simultaneously with confirmation modals
-- **Quick Actions**: Each row has action buttons to view, edit, finalize, or delete individual invoices
+- **Bulk Actions**: Finalize or pay multiple selected invoices simultaneously with confirmation modals
+- **Quick Actions**: Each row has action to view, edit, pay or finalize individual invoices
 
 #### 2. Create Invoice (`/create`)
 
