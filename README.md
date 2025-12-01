@@ -147,7 +147,7 @@ This invoice editor prototype has been built following React best practices with
 
 - **Data Table with react-table**: Server-side paginated table displaying invoices with customer info, totals, status, and dates
 - **Sortable Columns**: Total, Tax, Date, and Deadline columns support ascending/descending sorting
-- **Filtering**: Filter invoices by Finalized and Paid status using dropdown filters in column headers
+- **Filtering**: Filter invoices by customer autocomplete or by Finalized and Paid status using dropdown filters in column headers
 - **Pagination Controls**: Navigate between pages with first/previous/next/last buttons, page size selector, and direct page input
 - **Row Selection**: Checkbox selection for individual rows and "select all" for the current page
 - **Bulk Actions**: Finalize or delete multiple selected invoices simultaneously with confirmation modals
@@ -169,7 +169,7 @@ This invoice editor prototype has been built following React best practices with
 - **Invoice Information Card**: Shows invoice date, deadline, finalized status (Draft/Finalized badge), and payment status (Paid/Unpaid badge)
 - **Invoice Items Table**: Lists all line items with product details, unit price, quantity, unit, VAT rate, tax, and line total
 - **Summary Card**: Displays subtotal, tax, and grand total calculations
-- **Action Buttons**: Finalize (disabled if already finalized) and Remove invoice buttons
+- **Action Buttons**: Finalize (disabled if already finalized), Pay (disabled if already paid) and Remove invoice buttons
 - **Loading Skeleton**: Shows placeholder UI while fetching invoice data
 
 #### 4. Edit Invoice (`/invoice/:id/edit`)
@@ -185,6 +185,7 @@ This invoice editor prototype has been built following React best practices with
 #### 5. Reusable Components
 
 - **InvoiceFinalize**: Modal component for confirming invoice finalization with loading states and toast feedback
+- **InvoicePay**: Modal component for confirming invoice payment with loading states and toast feedback
 - **InvoiceDelete**: Modal component for confirming invoice deletion with loading states and toast feedback
 - **GoBack**: Navigation component with optional "back to root" behavior
 - **PageLayout**: Wrapper with logo and consistent page structure
