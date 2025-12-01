@@ -247,6 +247,10 @@ const InvoicesList = (): React.ReactElement => {
       const { data } = await api.getInvoices({
         page: pageIndex + 1,
         per_page: pageSize,
+        filter: JSON.stringify([
+          { field: 'paid', operator: 'eq', value: false },
+        ]),
+        sort: '+date',
       })
 
       setInvoices(data.invoices)

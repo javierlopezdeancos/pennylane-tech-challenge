@@ -4,7 +4,7 @@ import {
   UnknownParamsObject,
   OperationResponse,
   AxiosRequestConfig,
-} from 'openapi-client-axios'; 
+} from 'openapi-client-axios';
 
 declare namespace Components {
   namespace Schemas {
@@ -196,14 +196,14 @@ declare namespace Components {
     export interface InvoiceLineUpdatePayload {
       /**
        * If this parameter is set, the identified invoice_line will be updated (or deleted if _destroy is set to true) If this parameter is not set, a new invoice_line will be created
-       * 
+       *
        * example:
        * 45
        */
       id?: number;
       /**
        * If this parameter is set to true, and if "id" is set, the identified invoice_line will be deleted
-       * 
+       *
        * example:
        * false
        */
@@ -358,6 +358,7 @@ declare namespace Paths {
     }
     namespace Parameters {
       export type Filter = string;
+      export type Sort = string;
       export type Page = number;
       export type PerPage = number;
       export type XSESSION = string;
@@ -366,6 +367,7 @@ declare namespace Paths {
       page?: Parameters.Page;
       per_page?: Parameters.PerPage;
       filter?: Parameters.Filter;
+      sort?: Parameters.Sort;
     }
     namespace Responses {
       export interface $200 {
@@ -502,7 +504,7 @@ export interface OperationMethods {
   'getSearchProducts'(
     parameters?: Parameters<Paths.GetSearchProducts.QueryParameters & Paths.GetSearchProducts.HeaderParameters> | null,
     data?: any,
-    config?: AxiosRequestConfig  
+    config?: AxiosRequestConfig
   ): OperationResponse<Paths.GetSearchProducts.Responses.$200>
   /**
    * getSearchCustomers - Search customers
@@ -510,7 +512,7 @@ export interface OperationMethods {
   'getSearchCustomers'(
     parameters?: Parameters<Paths.GetSearchCustomers.QueryParameters & Paths.GetSearchCustomers.HeaderParameters> | null,
     data?: any,
-    config?: AxiosRequestConfig  
+    config?: AxiosRequestConfig
   ): OperationResponse<Paths.GetSearchCustomers.Responses.$200>
   /**
    * getInvoices - list invoices
@@ -518,7 +520,7 @@ export interface OperationMethods {
   'getInvoices'(
     parameters?: Parameters<Paths.GetInvoices.QueryParameters & Paths.GetInvoices.HeaderParameters> | null,
     data?: any,
-    config?: AxiosRequestConfig  
+    config?: AxiosRequestConfig
   ): OperationResponse<Paths.GetInvoices.Responses.$200>
   /**
    * postInvoices - create an invoice
@@ -526,7 +528,7 @@ export interface OperationMethods {
   'postInvoices'(
     parameters?: Parameters<Paths.PostInvoices.HeaderParameters> | null,
     data?: Paths.PostInvoices.RequestBody,
-    config?: AxiosRequestConfig  
+    config?: AxiosRequestConfig
   ): OperationResponse<Paths.PostInvoices.Responses.$200>
   /**
    * getInvoice - get an invoice
@@ -534,7 +536,7 @@ export interface OperationMethods {
   'getInvoice'(
     parameters?: Parameters<Paths.GetInvoice.PathParameters & Paths.GetInvoice.HeaderParameters> | null,
     data?: any,
-    config?: AxiosRequestConfig  
+    config?: AxiosRequestConfig
   ): OperationResponse<Paths.GetInvoice.Responses.$200>
   /**
    * putInvoice - update an invoice
@@ -542,7 +544,7 @@ export interface OperationMethods {
   'putInvoice'(
     parameters?: Parameters<Paths.PutInvoice.PathParameters & Paths.PutInvoice.HeaderParameters> | null,
     data?: Paths.PutInvoice.RequestBody,
-    config?: AxiosRequestConfig  
+    config?: AxiosRequestConfig
   ): OperationResponse<Paths.PutInvoice.Responses.$200>
   /**
    * deleteInvoice - delete an invoice
@@ -550,7 +552,7 @@ export interface OperationMethods {
   'deleteInvoice'(
     parameters?: Parameters<Paths.DeleteInvoice.PathParameters & Paths.DeleteInvoice.HeaderParameters> | null,
     data?: any,
-    config?: AxiosRequestConfig  
+    config?: AxiosRequestConfig
   ): OperationResponse<any>
 }
 
@@ -562,7 +564,7 @@ export interface PathsDictionary {
     'get'(
       parameters?: Parameters<Paths.GetSearchProducts.QueryParameters & Paths.GetSearchProducts.HeaderParameters> | null,
       data?: any,
-      config?: AxiosRequestConfig  
+      config?: AxiosRequestConfig
     ): OperationResponse<Paths.GetSearchProducts.Responses.$200>
   }
   ['/customers/search']: {
@@ -572,7 +574,7 @@ export interface PathsDictionary {
     'get'(
       parameters?: Parameters<Paths.GetSearchCustomers.QueryParameters & Paths.GetSearchCustomers.HeaderParameters> | null,
       data?: any,
-      config?: AxiosRequestConfig  
+      config?: AxiosRequestConfig
     ): OperationResponse<Paths.GetSearchCustomers.Responses.$200>
   }
   ['/invoices']: {
@@ -582,7 +584,7 @@ export interface PathsDictionary {
     'get'(
       parameters?: Parameters<Paths.GetInvoices.QueryParameters & Paths.GetInvoices.HeaderParameters> | null,
       data?: any,
-      config?: AxiosRequestConfig  
+      config?: AxiosRequestConfig
     ): OperationResponse<Paths.GetInvoices.Responses.$200>
     /**
      * postInvoices - create an invoice
@@ -590,7 +592,7 @@ export interface PathsDictionary {
     'post'(
       parameters?: Parameters<Paths.PostInvoices.HeaderParameters> | null,
       data?: Paths.PostInvoices.RequestBody,
-      config?: AxiosRequestConfig  
+      config?: AxiosRequestConfig
     ): OperationResponse<Paths.PostInvoices.Responses.$200>
   }
   ['/invoices/{id}']: {
@@ -600,7 +602,7 @@ export interface PathsDictionary {
     'put'(
       parameters?: Parameters<Paths.PutInvoice.PathParameters & Paths.PutInvoice.HeaderParameters> | null,
       data?: Paths.PutInvoice.RequestBody,
-      config?: AxiosRequestConfig  
+      config?: AxiosRequestConfig
     ): OperationResponse<Paths.PutInvoice.Responses.$200>
     /**
      * getInvoice - get an invoice
@@ -608,7 +610,7 @@ export interface PathsDictionary {
     'get'(
       parameters?: Parameters<Paths.GetInvoice.PathParameters & Paths.GetInvoice.HeaderParameters> | null,
       data?: any,
-      config?: AxiosRequestConfig  
+      config?: AxiosRequestConfig
     ): OperationResponse<Paths.GetInvoice.Responses.$200>
     /**
      * deleteInvoice - delete an invoice
@@ -616,7 +618,7 @@ export interface PathsDictionary {
     'delete'(
       parameters?: Parameters<Paths.DeleteInvoice.PathParameters & Paths.DeleteInvoice.HeaderParameters> | null,
       data?: any,
-      config?: AxiosRequestConfig  
+      config?: AxiosRequestConfig
     ): OperationResponse<any>
   }
 }
