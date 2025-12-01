@@ -201,6 +201,7 @@ const InvoiceCreate = (): React.ReactElement => {
                           Invoice Properties
                         </Card.Subtitle>
                         <Form.Check
+                          id="invoice-finalized"
                           className="mt-3"
                           type="checkbox"
                           label="Finalized"
@@ -210,6 +211,7 @@ const InvoiceCreate = (): React.ReactElement => {
                           }
                         />
                         <Form.Check
+                          id="invoice-paid"
                           className="mt-3"
                           type="checkbox"
                           label="Paid"

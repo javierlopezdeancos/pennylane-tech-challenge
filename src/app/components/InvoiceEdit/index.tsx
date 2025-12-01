@@ -289,6 +289,7 @@ const InvoiceEdit = (): React.ReactElement => {
                           Invoice Properties
                         </Card.Subtitle>
                         <Form.Check
+                          id="invoice-finalized"
                           className="mt-3"
                           type="checkbox"
                           label="Finalized"
@@ -296,6 +297,7 @@ const InvoiceEdit = (): React.ReactElement => {
                           onChange={(e) => setFinalized(e.target.checked)}
                         />
                         <Form.Check
+                          id="invoice-paid"
                           className="mt-3"
                           type="checkbox"
                           label="Paid"
