@@ -8,6 +8,7 @@ import { GroupBase } from 'react-select'
 interface Props {
   value: Customer | null
   onChange: (Customer: Customer | null) => void
+  size?: 'sm' | 'md'
 }
 
 const defaultAdditional = { page: 1 }
@@ -16,7 +17,7 @@ const getCustomerLabel = (customer: Customer) => {
   return `${customer.first_name} ${customer.last_name}`
 }
 
-const CustomerAutocomplete = ({ value, onChange }: Props) => {
+const CustomerAutocomplete = ({ value, onChange, size = 'md' }: Props) => {
   const api = useApi()
 
   const loadOptions: LoadOptions<
@@ -44,15 +45,52 @@ const CustomerAutocomplete = ({ value, onChange }: Props) => {
     [api]
   )
 
+  const smallStyles = {
+    control: (base: any) => ({
+      ...base,
+      minHeight: '28px',
+      height: '28px',
+      fontSize: '12px',
+    }),
+    valueContainer: (base: any) => ({
+      ...base,
+      padding: '0 6px',
+      height: '28px',
+    }),
+    input: (base: any) => ({
+      ...base,
+      margin: '0',
+      padding: '0',
+    }),
+    indicatorsContainer: (base: any) => ({
+      ...base,
+      height: '28px',
+    }),
+    option: (base: any) => ({
+      ...base,
+      fontSize: '12px',
+      padding: '6px 10px',
+    }),
+    placeholder: (base: any) => ({
+      ...base,
+      fontSize: '12px',
+    }),
+    singleValue: (base: any) => ({
+      ...base,
+      fontSize: '12px',
+    }),
+  }
+
   return (
     <AsyncPaginate
-      placeholder="Search a customer"
+      placeholder={size === 'sm' ? 'Filter...' : 'Search a customer'}
       getOptionLabel={getCustomerLabel}
       additional={defaultAdditional}
       value={value}
       onChange={onChange}
       loadOptions={loadOptions}
       isClearable
+      styles={size === 'sm' ? smallStyles : undefined}
     />
   )
 }

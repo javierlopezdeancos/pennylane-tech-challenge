@@ -1,5 +1,5 @@
 import { useApi } from 'api'
-import { Invoice } from 'types'
+import { Invoice, Customer } from 'types'
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import {
   useTable,
@@ -31,6 +31,7 @@ import { useNavigate } from 'react-router'
 import InvoiceFinalize from '../InvoiceFinalize'
 import InvoiceDelete from '../InvoiceDelete'
 import InvoicePay from '../InvoicePay'
+import CustomerAutocomplete from '../CustomerAutocomplete'
 
 const InvoicesList = (): React.ReactElement => {
   const api = useApi()
@@ -65,6 +66,8 @@ const InvoicesList = (): React.ReactElement => {
     msg: string
     success: boolean
   }>({ show: false, msg: '', success: true })
+
+  const [customerFilter, setCustomerFilter] = useState<Customer | null>(null)
 
   const handleGoToInvoiceDetails = useCallback(
     (id: number) => {
@@ -109,6 +112,15 @@ const InvoicesList = (): React.ReactElement => {
         disableSortBy: true,
         accessor: (d) =>
           d.customer ? `${d.customer.first_name} ${d.customer.last_name}` : '',
+        Filter: () => (
+          <div style={{ width: '150px', fontSize: '12px' }}>
+            <CustomerAutocomplete
+              value={customerFilter}
+              onChange={setCustomerFilter}
+              size="sm"
+            />
+          </div>
+        ),
       },
       {
         Header: 'Address',
@@ -223,6 +235,7 @@ const InvoicesList = (): React.ReactElement => {
       handleGoToEditInvoice,
       handleFinalizeInvoice,
       handlePayInvoice,
+      customerFilter,
     ]
   )
 
@@ -261,10 +274,21 @@ const InvoicesList = (): React.ReactElement => {
     const fetchInvoices = async () => {
       setLoading(true)
 
+      const filters: Array<{ field: string; operator: string; value: any }> = []
+
+      if (customerFilter) {
+        filters.push({
+          field: 'customer_id',
+          operator: 'eq',
+          value: customerFilter.id,
+        })
+      }
+
       const { data } = await api.getInvoices({
         page: pageIndex + 1,
         per_page: pageSize,
         sort: '+paid,+date',
+        ...(filters.length > 0 && { filter: JSON.stringify(filters) }),
       })
 
       setInvoices(data.invoices)
@@ -274,7 +298,11 @@ const InvoicesList = (): React.ReactElement => {
     }
 
     fetchInvoices()
-  }, [api, pageIndex, pageSize, selectedInvoiceId])
+  }, [api, pageIndex, pageSize, selectedInvoiceId, customerFilter])
+
+  useEffect(() => {
+    gotoPage(0)
+  }, [customerFilter, gotoPage])
 
   const handleGoToFirstPage = () => {
     gotoPage(0)
