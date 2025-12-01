@@ -10,6 +10,7 @@ import {
   Spinner,
   Toast,
   ToastContainer,
+  Alert,
 } from 'react-bootstrap'
 import GoBack from '../GoBack'
 import CustomerAutocomplete from '../CustomerAutocomplete'
@@ -138,32 +139,52 @@ const InvoiceEdit = (): React.ReactElement => {
     fetchInvoice()
   }, [api, id])
 
-  const canSubmit = () => {
+  const validationErrors = useMemo(() => {
+    const errors: string[] = []
+
     if (!customer) {
-      return false
+      errors.push('Please select a customer')
     }
 
     if (!lines || lines.length === 0) {
-      return false
+      errors.push('Please add at least one line item')
+      return errors
     }
 
     const activeLines = lines.filter((l) => !l._destroy)
 
     if (activeLines.length === 0) {
-      return false
+      errors.push('Please add at least one active line item')
+      return errors
     }
 
-    for (const l of activeLines) {
-      if (!l.product || !l.product.id) {
-        return false
-      }
+    const linesWithoutProduct = activeLines
+      .map((l, idx) => ({ line: l, index: idx + 1 }))
+      .filter((item) => !item.line.product || !item.line.product.id)
 
-      if (!l.quantity || l.quantity <= 0) {
-        return false
-      }
+    if (linesWithoutProduct.length > 0) {
+      const lineNumbers = linesWithoutProduct
+        .map((item) => item.index)
+        .join(', ')
+      errors.push(`Line ${lineNumbers}: Please select a product`)
     }
 
-    return true
+    const linesWithInvalidQuantity = activeLines
+      .map((l, idx) => ({ line: l, index: idx + 1 }))
+      .filter((item) => !item.line.quantity || item.line.quantity <= 0)
+
+    if (linesWithInvalidQuantity.length > 0) {
+      const lineNumbers = linesWithInvalidQuantity
+        .map((item) => item.index)
+        .join(', ')
+      errors.push(`Line ${lineNumbers}: Quantity must be greater than 0`)
+    }
+
+    return errors
+  }, [customer, lines])
+
+  const canSubmit = () => {
+    return validationErrors.length === 0
   }
 
   const addLine = () => setLines((prev) => [...prev, { ...emptyLine }])
@@ -447,6 +468,18 @@ const InvoiceEdit = (): React.ReactElement => {
                     </Row>
                   </Card.Body>
                 </Card>
+                {validationErrors.length > 0 && (
+                  <Alert variant="warning" className="mb-3">
+                    <Alert.Heading className="h6 mb-2">
+                      Please fix the following issues:
+                    </Alert.Heading>
+                    <ul className="mb-0 ps-3">
+                      {validationErrors.map((error, idx) => (
+                        <li key={idx}>{error}</li>
+                      ))}
+                    </ul>
+                  </Alert>
+                )}
                 <div className="d-flex justify-content-end">
                   <Button
                     variant="danger"
