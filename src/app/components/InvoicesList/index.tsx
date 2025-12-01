@@ -53,9 +53,7 @@ const InvoicesList = (): React.ReactElement => {
 
   const [showBulkConfirm, setShowBulkConfirm] = useState(false)
 
-  const [bulkAction, setBulkAction] = useState<'finalize' | 'delete' | null>(
-    null
-  )
+  const [bulkAction, setBulkAction] = useState<'finalize' | 'paid' | null>(null)
 
   const [bulkLoading, setBulkLoading] = useState(false)
 
@@ -297,8 +295,13 @@ const InvoicesList = (): React.ReactElement => {
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+
       return next
     })
   }
@@ -320,8 +323,10 @@ const InvoicesList = (): React.ReactElement => {
 
     setSelectedIds((prev) => {
       const next = new Set(prev)
+
       page.forEach((r) => {
         const id = (r.original as Invoice).id
+
         if (allSelected) {
           next.delete(id)
         } else {
@@ -334,7 +339,7 @@ const InvoicesList = (): React.ReactElement => {
 
   const selectedCount = selectedIds.size
 
-  const handleOpenBulk = (action: 'finalize' | 'delete') => {
+  const handleOpenBulk = (action: 'finalize' | 'paid') => {
     setBulkAction(action)
     setShowBulkConfirm(true)
   }
@@ -391,34 +396,39 @@ const InvoicesList = (): React.ReactElement => {
           successes.forEach((s) => next.delete(s.id))
           return next
         })
-      } else if (bulkAction === 'delete') {
+      } else if (bulkAction === 'paid') {
         const results = await Promise.allSettled(
-          ids.map((id) => api.deleteInvoice({ id }))
+          ids.map((id) =>
+            api.putInvoice({ id }, { invoice: { id, paid: true } })
+          )
         )
 
-        const successes: number[] = []
+        const successes: Invoice[] = []
         const failures: any[] = []
 
         results.forEach((r, idx) => {
-          if (r.status === 'fulfilled') successes.push(ids[idx])
-          else failures.push({ id: ids[idx], reason: r })
+          if (r.status === 'fulfilled') {
+            successes.push(r.value.data)
+          } else {
+            failures.push({ id: ids[idx], reason: r })
+          }
         })
 
         if (successes.length) {
           setInvoices((prev) =>
-            prev.filter((inv) => !successes.includes(inv.id))
+            prev.filter((inv) => !successes.find((s) => s.id === inv.id))
           )
         }
 
         setBulkToast({
           show: true,
-          msg: `Deleted ${successes.length} invoices, ${failures.length} failed.`,
+          msg: `Marked ${successes.length} invoices as paid, ${failures.length} failed.`,
           success: failures.length === 0,
         })
 
         setSelectedIds((prev) => {
           const next = new Set(prev)
-          successes.forEach((id) => next.delete(id))
+          successes.forEach((s) => next.delete(s.id))
           return next
         })
       }
@@ -466,17 +476,8 @@ const InvoicesList = (): React.ReactElement => {
       <div className="d-flex justify-content-between align-items-center mb-2 w-100">
         <p className="text-start fs-5">{selectedCount} invoices selected.</p>
         <div className="d-flex justify-content-end align-items-center mb-2">
-          <div>
-            <Button
-              variant="primary"
-              className="me-2"
-              onClick={() => navigate('/create')}
-            >
-              Create invoice
-            </Button>
-          </div>
           <Button
-            variant="primary"
+            variant="success"
             className="me-2"
             onClick={() => handleOpenBulk('finalize')}
             disabled={selectedCount === 0 || bulkLoading || loading}
@@ -487,14 +488,22 @@ const InvoicesList = (): React.ReactElement => {
             Finalize selected
           </Button>
           <Button
-            variant="danger"
-            onClick={() => handleOpenBulk('delete')}
+            variant="success"
+            onClick={() => handleOpenBulk('paid')}
             disabled={selectedCount === 0 || bulkLoading || loading}
           >
             {bulkLoading ? (
               <Spinner animation="border" size="sm" className="me-2" />
             ) : null}
-            Remove selected
+            Paid selected
+          </Button>
+
+          <Button
+            variant="primary"
+            className="ms-2"
+            onClick={() => navigate('/create')}
+          >
+            Create invoice
           </Button>
         </div>
       </div>
@@ -659,24 +668,24 @@ const InvoicesList = (): React.ReactElement => {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            Confirm Bulk {bulkAction === 'delete' ? 'Delete' : 'Finalize'}
+            Confirm Bulk {bulkAction === 'paid' ? 'Mark as Paid' : 'Finalize'}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           Are you sure you want to{' '}
-          {bulkAction === 'delete' ? 'permanently delete' : 'finalize'} the
-          selected {selectedCount} invoices?
+          {bulkAction === 'paid' ? 'mark as paid' : 'finalize'} the selected{' '}
+          {selectedCount} invoices?
         </Modal.Body>
         <Modal.Footer>
           <Button
-            variant="secondary"
+            variant="danger"
             onClick={() => setShowBulkConfirm(false)}
             disabled={bulkLoading}
           >
             Cancel
           </Button>
           <Button
-            variant={bulkAction === 'delete' ? 'danger' : 'primary'}
+            variant={'primary'}
             onClick={handleConfirmBulk}
             disabled={bulkLoading}
           >
