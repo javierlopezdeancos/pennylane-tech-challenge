@@ -263,10 +263,7 @@ const InvoicesList = (): React.ReactElement => {
       const { data } = await api.getInvoices({
         page: pageIndex + 1,
         per_page: pageSize,
-        filter: JSON.stringify([
-          { field: 'paid', operator: 'eq', value: false },
-        ]),
-        sort: '+date',
+        sort: '+paid,+date',
       })
 
       setInvoices(data.invoices)
@@ -434,7 +431,10 @@ const InvoicesList = (): React.ReactElement => {
 
         if (successes.length) {
           setInvoices((prev) =>
-            prev.filter((inv) => !successes.find((s) => s.id === inv.id))
+            prev.map((inv) => {
+              const updated = successes.find((s) => s.id === inv.id)
+              return updated || inv
+            })
           )
         }
 
@@ -490,7 +490,9 @@ const InvoicesList = (): React.ReactElement => {
   }
 
   const handlePaySuccess = (paidInvoice: Invoice) => {
-    setInvoices((prev) => prev.filter((inv) => inv.id !== paidInvoice.id))
+    setInvoices((prev) =>
+      prev.map((inv) => (inv.id === paidInvoice.id ? paidInvoice : inv))
+    )
 
     setShowPayModal(false)
     setSelectedInvoiceId(undefined)
