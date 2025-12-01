@@ -55,10 +55,7 @@ test.describe('InvoicesList Route (/)', () => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    const totalHeader = page
-      .locator('th')
-      .filter({ hasText: 'Total' })
-      .first()
+    const totalHeader = page.locator('th').filter({ hasText: 'Total' }).first()
 
     await expect(totalHeader).toBeVisible()
 
@@ -89,29 +86,22 @@ test.describe('InvoicesList Route (/)', () => {
     await firstRowCheckbox.click()
     await page.waitForTimeout(300)
 
-    const bulkFinalizeBtn = page.locator(
-      'button:has-text("Finalize selected")'
-    )
+    const bulkFinalizeBtn = page.locator('button:has-text("Finalize selected")')
 
     await expect(bulkFinalizeBtn).toBeVisible()
 
-    const bulkDeleteBtn = page.locator('button:has-text("Remove selected")')
+    const bulkPaidBtn = page.locator('button:has-text("Paid selected")')
 
-    await expect(bulkDeleteBtn).toBeVisible()
+    await expect(bulkPaidBtn).toBeVisible()
   })
 
-  test('should navigate to create invoice page', async ({
-    page,
-    mockAPI,
-  }) => {
+  test('should navigate to create invoice page', async ({ page, mockAPI }) => {
     await mockAPI.mockAll()
 
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    const createBtn = page
-      .locator('button:has-text("Create invoice")')
-      .first()
+    const createBtn = page.locator('button:has-text("Create invoice")').first()
 
     await expect(createBtn).toBeVisible()
 
@@ -122,5 +112,3 @@ test.describe('InvoicesList Route (/)', () => {
     await expect(page.locator('h1')).toContainText('Create Invoice')
   })
 })
-
-
