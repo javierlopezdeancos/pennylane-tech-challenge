@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Container,
@@ -52,6 +52,46 @@ const InvoiceEdit = (): React.ReactElement => {
     msg: string
     success: boolean
   }>({ show: false, msg: '', success: true })
+
+  const calculateLineSubtotal = (line: LineEdit): number => {
+    if (!line.product || line._destroy) return 0
+    return parseFloat(line.product.unit_price_without_tax) * line.quantity
+  }
+
+  const calculateLineTax = (line: LineEdit): number => {
+    if (!line.product || line._destroy) return 0
+    return parseFloat(line.product.unit_tax) * line.quantity
+  }
+
+  const calculateLineTotal = (line: LineEdit): number => {
+    if (!line.product || line._destroy) return 0
+    return parseFloat(line.product.unit_price) * line.quantity
+  }
+
+  const invoiceTotals = useMemo(() => {
+    const activeLines = lines.filter((l) => !l._destroy && l.product)
+
+    const subtotal = activeLines.reduce(
+      (sum, line) => sum + calculateLineSubtotal(line),
+      0
+    )
+
+    const tax = activeLines.reduce(
+      (sum, line) => sum + calculateLineTax(line),
+      0
+    )
+
+    const total = activeLines.reduce(
+      (sum, line) => sum + calculateLineTotal(line),
+      0
+    )
+
+    return { subtotal, tax, total }
+  }, [lines])
+
+  const formatCurrency = (amount: number): string => {
+    return amount.toFixed(2)
+  }
 
   useEffect(() => {
     if (!id) {
@@ -278,23 +318,39 @@ const InvoiceEdit = (): React.ReactElement => {
                 </Row>
                 <Card className="mb-3">
                   <Card.Body>
-                    <Card.Subtitle className="mb-2">Lines</Card.Subtitle>
+                    <Card.Subtitle className="mb-3">Lines</Card.Subtitle>
+                    <Row className="mb-2 fw-bold text-muted small">
+                      <Col md={4}>Product</Col>
+                      <Col md={1} className="text-center">
+                        Quantity
+                      </Col>
+                      <Col md={2} className="text-end">
+                        Subtotal
+                      </Col>
+                      <Col md={2} className="text-end">
+                        Tax
+                      </Col>
+                      <Col md={2} className="text-end">
+                        Total
+                      </Col>
+                      <Col md={1}></Col>
+                    </Row>
                     {lines.map((l, idx) => (
                       <Row
                         key={idx}
-                        className="align-items-center mb-2"
+                        className="align-items-center mb-2 py-2 border-bottom"
                         style={{
                           opacity: l._destroy ? 0.5 : 1,
                           textDecoration: l._destroy ? 'line-through' : 'none',
                         }}
                       >
-                        <Col md={6}>
+                        <Col md={4}>
                           <ProductAutocomplete
                             value={l.product}
                             onChange={(p) => setLineProduct(idx, p)}
                           />
                         </Col>
-                        <Col md={2}>
+                        <Col md={1}>
                           <Form.Control
                             type="number"
                             min={1}
@@ -303,9 +359,32 @@ const InvoiceEdit = (): React.ReactElement => {
                               setLineQuantity(idx, Number(e.target.value))
                             }
                             disabled={l._destroy}
+                            size="sm"
+                            className="text-center"
                           />
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} className="text-end">
+                          <span className="text-muted">
+                            {l.product && !l._destroy
+                              ? `€${formatCurrency(calculateLineSubtotal(l))}`
+                              : '-'}
+                          </span>
+                        </Col>
+                        <Col md={2} className="text-end">
+                          <span className="text-muted">
+                            {l.product && !l._destroy
+                              ? `€${formatCurrency(calculateLineTax(l))}`
+                              : '-'}
+                          </span>
+                        </Col>
+                        <Col md={2} className="text-end">
+                          <span className="fw-semibold">
+                            {l.product && !l._destroy
+                              ? `€${formatCurrency(calculateLineTotal(l))}`
+                              : '-'}
+                          </span>
+                        </Col>
+                        <Col md={1} className="text-end">
                           {l.id ? (
                             <Button
                               variant={
@@ -334,6 +413,38 @@ const InvoiceEdit = (): React.ReactElement => {
                     <Button variant="link" onClick={addLine} className="p-0">
                       + Add line
                     </Button>
+                  </Card.Body>
+                </Card>
+                <Card className="mb-3">
+                  <Card.Body>
+                    <Card.Subtitle className="mb-3">
+                      Invoice Totals
+                    </Card.Subtitle>
+                    <Row className="mb-2">
+                      <Col md={9} className="text-end text-muted">
+                        Subtotal (excl. tax):
+                      </Col>
+                      <Col md={3} className="text-end">
+                        €{formatCurrency(invoiceTotals.subtotal)}
+                      </Col>
+                    </Row>
+                    <Row className="mb-2">
+                      <Col md={9} className="text-end text-muted">
+                        Tax:
+                      </Col>
+                      <Col md={3} className="text-end">
+                        €{formatCurrency(invoiceTotals.tax)}
+                      </Col>
+                    </Row>
+                    <hr />
+                    <Row className="fw-bold fs-5">
+                      <Col md={9} className="text-end">
+                        Total:
+                      </Col>
+                      <Col md={3} className="text-end">
+                        €{formatCurrency(invoiceTotals.total)}
+                      </Col>
+                    </Row>
                   </Card.Body>
                 </Card>
                 <div className="d-flex justify-content-end">
