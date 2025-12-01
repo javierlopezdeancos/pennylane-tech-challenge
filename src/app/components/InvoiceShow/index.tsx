@@ -17,6 +17,7 @@ import { Invoice } from 'types'
 import InvoiceShowSkeleton from './InvoiceShowSkeleton'
 import InvoiceFinalize from '../InvoiceFinalize'
 import InvoiceDelete from '../InvoiceDelete'
+import InvoicePay from '../InvoicePay'
 
 const InvoiceShow = () => {
   const { id } = useParams<{ id: string }>()
@@ -27,6 +28,7 @@ const InvoiceShow = () => {
   const [loading, setLoading] = useState(true)
   const [showFinalizeModal, setShowFinalizeModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showPayModal, setShowPayModal] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
   useEffect(() => {
@@ -73,7 +75,7 @@ const InvoiceShow = () => {
 
   const deleteInvoice = () => setShowDeleteModal(true)
 
-  // closeRemove is handled by InvoiceDelete component via callbacks
+  const payInvoice = () => setShowPayModal(true)
 
   const handleFinalizeSuccess = (updatedInvoice: Invoice) => {
     setInvoice(updatedInvoice)
@@ -111,6 +113,24 @@ const InvoiceShow = () => {
     setShowDeleteModal(false)
   }
 
+  const handlePaySuccess = (updatedInvoice: Invoice) => {
+    setInvoice(updatedInvoice)
+    setShowPayModal(false)
+    setActionLoading(false)
+  }
+
+  const handlePayFailure = (error: unknown) => {
+    // eslint-disable-next-line no-console
+    console.error('Failed to pay invoice:', error)
+    setActionLoading(false)
+    setShowPayModal(false)
+  }
+
+  const handlePayCancel = () => {
+    setActionLoading(false)
+    setShowPayModal(false)
+  }
+
   return (
     <Container>
       <Row className="mb-4">
@@ -120,6 +140,16 @@ const InvoiceShow = () => {
             <h1>Invoice {invoice.id}</h1>
           </div>
           <div className="d-flex gap-2">
+            <Button
+              variant="primary"
+              onClick={payInvoice}
+              disabled={invoice.paid || actionLoading}
+            >
+              {actionLoading && showPayModal ? (
+                <Spinner animation="border" size="sm" className="me-2" />
+              ) : null}
+              Pay Invoice
+            </Button>
             <Button
               variant="primary"
               onClick={finalizeInvoice}
@@ -324,6 +354,13 @@ const InvoiceShow = () => {
         onSuccess={handleDeleteSuccess}
         onFailure={handleDeleteFailure}
         onCancel={handleDeleteCancel}
+      />
+      <InvoicePay
+        invoiceId={invoice.id}
+        open={showPayModal}
+        onSuccess={handlePaySuccess}
+        onFailure={handlePayFailure}
+        onCancel={handlePayCancel}
       />
     </Container>
   )
