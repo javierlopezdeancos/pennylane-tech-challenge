@@ -21,7 +21,7 @@ import {
 } from 'react-bootstrap'
 import { Modal, Spinner, Toast, ToastContainer } from 'react-bootstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
+import { faEllipsis } from '@fortawesome/free-solid-svg-icons'
 import PaginationItems from './PaginationItems'
 import PaginationControls from './PaginationControls'
 import InvoiceListSkeleton from './InvoiceListSkeleton'
@@ -166,9 +166,10 @@ const InvoicesList = (): React.ReactElement => {
         ),
       },
       {
-        Header: '',
+        Header: 'Actions',
         id: 'actions',
         disableSortBy: true,
+        align: 'right',
         Cell: ({ row }: { row: { original: Invoice } }) => (
           <OverlayTrigger
             trigger="click"
@@ -211,7 +212,7 @@ const InvoicesList = (): React.ReactElement => {
               variant="link"
               className="p-0 text-dark border-0 shadow-none"
             >
-              <FontAwesomeIcon icon={faEllipsisVertical} />
+              <FontAwesomeIcon icon={faEllipsis} size="lg" />
             </Button>
           </OverlayTrigger>
         ),
